@@ -5,6 +5,8 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { LatestNews } from "@/components/home/LatestNews";
 import { RegionalNews } from "@/components/home/RegionalNews";
 import { YouTubeEmbed } from "@/components/home/YouTubeEmbed";
+import { RadioPartners } from "@/components/home/RadioPartners";
+import { CommunicatorsPreview } from "@/components/home/CommunicatorsPreview";
 
 const Index = () => {
   return (
@@ -23,6 +25,12 @@ const Index = () => {
         
         {/* Regional News */}
         <RegionalNews />
+
+        {/* Radio Partners Section */}
+        <RadioPartners />
+
+        {/* Communicators Preview */}
+        <CommunicatorsPreview />
         
         {/* YouTube Embed */}
         <YouTubeEmbed />
