@@ -31,39 +31,53 @@ export function RadioPlayer() {
 
           <div className="relative z-10 p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-              {/* Radio Selector */}
+              {/* Radio Selector with Logos */}
               <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
                 {radios.map((radio) => (
                   <button
                     key={radio.id}
                     onClick={() => setSelectedRadio(radio)}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                      "relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
                       selectedRadio.id === radio.id
                         ? "bg-primary-foreground text-primary shadow-md"
                         : "bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
                     )}
                   >
-                    {radio.frequency}
+                    <img 
+                      src={radio.logo} 
+                      alt={radio.name}
+                      className="w-5 h-5 object-contain"
+                    />
+                    <span className="hidden sm:inline">{radio.frequency}</span>
                   </button>
                 ))}
               </div>
 
               {/* Selected Radio Info */}
-              <div className="flex-1 text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <Radio className="w-4 h-4 text-accent" />
-                  <span className="text-accent text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                    Ao Vivo
-                  </span>
+              <div className="flex-1 flex items-center gap-4 text-center md:text-left">
+                <div className="hidden md:block w-12 h-12 rounded-lg bg-primary-foreground/10 p-1.5">
+                  <img 
+                    src={selectedRadio.logo} 
+                    alt={selectedRadio.name}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <h3 className="text-primary-foreground font-display text-xl font-bold mt-1">
-                  {selectedRadio.name}
-                </h3>
-                <p className="text-primary-foreground/70 text-sm">
-                  {selectedRadio.tagline}
-                </p>
+                <div>
+                  <div className="flex items-center justify-center md:justify-start gap-2">
+                    <Radio className="w-4 h-4 text-accent" />
+                    <span className="text-accent text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                      Ao Vivo
+                    </span>
+                  </div>
+                  <h3 className="text-primary-foreground font-display text-xl font-bold mt-1">
+                    {selectedRadio.name}
+                  </h3>
+                  <p className="text-primary-foreground/70 text-sm">
+                    {selectedRadio.tagline}
+                  </p>
+                </div>
               </div>
 
               {/* Controls */}
