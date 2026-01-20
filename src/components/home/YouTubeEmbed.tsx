@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export function YouTubeEmbed() {
   // In production, this would fetch the latest video from YouTube API
-  const latestVideoId = "dQw4w9WgXcQ"; // Placeholder video ID
+  const latestVideoId = "CyKl-0Y1ZDg";
   const channelUrl = "https://youtube.com/@example";
 
   return (
