@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Radio, Headphones } from "lucide-react";
+import { Menu, X, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import grupoLogo from "@/assets/logos/grupo-jsidney.png";
 
 const navItems = [
   { label: "Início", href: "/" },
@@ -19,19 +20,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-lg gradient-radio">
-            <Radio className="w-5 h-5 text-primary-foreground" />
-            <div className="absolute inset-0 rounded-lg bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display text-lg font-bold text-foreground leading-none">
-              Portal de Notícias
-            </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              Grupo de Rádios
-            </span>
-          </div>
+        <Link to="/" className="flex items-center gap-3 group">
+          <img 
+            src={grupoLogo} 
+            alt="Grupo J.Sidney de Comunicação" 
+            className="h-12 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Navigation */}
