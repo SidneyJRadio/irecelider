@@ -19,15 +19,15 @@ const Index = () => {
         
         {/* Hero with Featured News */}
         <HeroSection />
+
+        {/* Radio Partners Section - Moved above Latest News */}
+        <RadioPartners />
         
         {/* Latest News Grid */}
         <LatestNews />
         
         {/* Regional News */}
         <RegionalNews />
-
-        {/* Radio Partners Section */}
-        <RadioPartners />
 
         {/* Communicators Preview */}
         <CommunicatorsPreview />

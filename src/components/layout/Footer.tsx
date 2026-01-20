@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { Radio, Instagram, Youtube, Facebook } from "lucide-react";
+import { Instagram, Youtube, Facebook } from "lucide-react";
 import { radios } from "@/data/radios";
+import grupoLogo from "@/assets/logos/grupo-jsidney.png";
 
 export function Footer() {
   return (
@@ -10,17 +11,11 @@ export function Footer() {
           {/* Logo & Description */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary-foreground/10">
-                <Radio className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-display text-lg font-bold leading-none">
-                  Portal de Notícias
-                </span>
-                <span className="text-xs text-primary-foreground/70 font-medium">
-                  Grupo de Rádios
-                </span>
-              </div>
+              <img 
+                src={grupoLogo} 
+                alt="Grupo J.Sidney de Comunicação" 
+                className="h-14 w-auto object-contain brightness-0 invert"
+              />
             </Link>
             <p className="text-sm text-primary-foreground/80 leading-relaxed">
               O portal oficial de notícias do grupo de rádios. Informação de qualidade para toda a região.
@@ -112,7 +107,7 @@ export function Footer() {
 
         <div className="mt-10 pt-6 border-t border-primary-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-primary-foreground/60">
-            © {new Date().getFullYear()} Portal de Notícias - Grupo de Rádios. Todos os direitos reservados.
+            © {new Date().getFullYear()} Grupo J.Sidney de Comunicação. Todos os direitos reservados.
           </p>
           <p className="text-xs text-primary-foreground/60">
             Desenvolvido com ❤️ para a comunidade
