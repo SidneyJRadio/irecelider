@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +30,7 @@ export default function NewsForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -132,6 +135,11 @@ export default function NewsForm() {
         variant: "destructive",
       });
     } else {
+      // Invalidate queries to update homepage automatically
+      queryClient.invalidateQueries({ queryKey: ["published-news"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-news"] });
+      queryClient.invalidateQueries({ queryKey: ["all-news"] });
+      
       toast({
         title: isEdit ? "Notícia atualizada" : "Notícia criada",
         description: "As alterações foram salvas com sucesso.",
@@ -219,15 +227,12 @@ export default function NewsForm() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="image_url">URL da Imagem</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                />
-              </div>
+              <ImageUpload
+                value={formData.image_url}
+                onChange={(url) => setFormData((prev) => ({ ...prev, image_url: url }))}
+                label="Imagem de Capa"
+                folder="news"
+              />
             </CardContent>
           </Card>
 

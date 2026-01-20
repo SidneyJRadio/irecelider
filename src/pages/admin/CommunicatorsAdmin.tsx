@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +60,7 @@ interface RadioOption {
 }
 
 export default function CommunicatorsAdmin() {
+  const queryClient = useQueryClient();
   const [communicators, setCommunicators] = useState<Communicator[]>([]);
   const [radios, setRadios] = useState<RadioOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,6 +151,7 @@ export default function CommunicatorsAdmin() {
         variant: "destructive",
       });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["communicators"] });
       toast({
         title: editId ? "Comunicador atualizado" : "Comunicador criado",
         description: "As alterações foram salvas com sucesso.",
@@ -259,15 +263,12 @@ export default function CommunicatorsAdmin() {
                     placeholder="@usuario"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="photo_url">URL da Foto</Label>
-                  <Input
-                    id="photo_url"
-                    value={formData.photo_url}
-                    onChange={(e) => setFormData((p) => ({ ...p, photo_url: e.target.value }))}
-                    placeholder="https://..."
-                  />
-                </div>
+                <ImageUpload
+                  value={formData.photo_url}
+                  onChange={(url) => setFormData((p) => ({ ...p, photo_url: url }))}
+                  label="Foto do Comunicador"
+                  folder="communicators"
+                />
                 <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar
