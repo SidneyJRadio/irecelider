@@ -1,25 +1,43 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getLatestNews } from "@/data/news";
+import { usePublishedNews } from "@/hooks/useData";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function LatestNews() {
-  const latestNews = getLatestNews(6);
+  const { data: news, isLoading } = usePublishedNews(6);
+
+  if (isLoading) {
+    return (
+      <section className="py-10 md:py-14">
+        <div className="container">
+          <div className="flex items-center justify-between mb-8">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-10 w-32 hidden md:block" />
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="aspect-[4/3] rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!news || news.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-10 md:py-14">
       <div className="container">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-              Últimas Notícias
-            </h2>
-            <p className="text-muted-foreground mt-1">
-              Fique por dentro das novidades
-            </p>
-          </div>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            Últimas Notícias
+          </h2>
           <Link to="/noticias" className="hidden md:block">
             <Button variant="outline" className="gap-2 rounded-full">
               Ver todas
@@ -28,50 +46,49 @@ export function LatestNews() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestNews.map((news, index) => (
-            <Link
-              key={news.id}
-              to={`/noticias/${news.id}`}
-              className="group"
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {news.map((article, index) => (
+            <article
+              key={article.id}
+              className="group bg-card rounded-xl overflow-hidden shadow-card hover:shadow-hover transition-all duration-300 animate-fade-in"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <article className="card-news h-full flex flex-col">
-                <div className="relative aspect-[16/10] overflow-hidden">
+              <Link to={`/noticias/${article.slug}`}>
+                <div className="aspect-[16/10] overflow-hidden">
                   <img
-                    src={news.image}
-                    alt={news.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    src={article.image_url || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80"}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3">
-                    <span className="region-badge bg-primary text-primary-foreground">
-                      {news.region}
-                    </span>
-                  </div>
                 </div>
-
-                <div className="flex-1 p-4 flex flex-col">
-                  <h3 className="news-title text-lg text-card-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-                    {news.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm line-clamp-2 flex-1">
-                    {news.excerpt}
-                  </p>
-                  <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border">
-                    <span className="text-xs text-muted-foreground">
-                      {news.author}
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="px-2 py-0.5 text-xs font-semibold rounded"
+                      style={{
+                        backgroundColor: `${article.regions?.color || "hsl(220, 70%, 45%)"}20`,
+                        color: article.regions?.color || "hsl(220, 70%, 45%)",
+                      }}
+                    >
+                      {article.regions?.name || "Notícia"}
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
-                      {formatDistanceToNow(new Date(news.createdAt), {
+                      {article.published_at && formatDistanceToNow(new Date(article.published_at), {
                         addSuffix: true,
                         locale: ptBR,
                       })}
                     </span>
                   </div>
+                  <h3 className="font-display text-lg font-bold text-foreground leading-tight mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                    {article.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {article.excerpt}
+                  </p>
                 </div>
-              </article>
-            </Link>
+              </Link>
+            </article>
           ))}
         </div>
 
