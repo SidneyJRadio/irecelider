@@ -14,16 +14,282 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      communicators: {
+        Row: {
+          active: boolean | null
+          bio: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          instagram: string | null
+          name: string
+          photo_url: string | null
+          program: string | null
+          radio_id: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          bio?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          instagram?: string | null
+          name: string
+          photo_url?: string | null
+          program?: string | null
+          radio_id?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          bio?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          instagram?: string | null
+          name?: string
+          photo_url?: string | null
+          program?: string | null
+          radio_id?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communicators_radio_id_fkey"
+            columns: ["radio_id"]
+            isOneToOne: false
+            referencedRelation: "radios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news: {
+        Row: {
+          author_id: string | null
+          content: string | null
+          created_at: string
+          excerpt: string | null
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          published_at: string | null
+          region_id: string | null
+          slug: string
+          status: string | null
+          title: string
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          author_id?: string | null
+          content?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          region_id?: string | null
+          slug: string
+          status?: string | null
+          title: string
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          author_id?: string | null
+          content?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          region_id?: string | null
+          slug?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          region_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          region_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          region_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      radios: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string
+          frequency: string
+          id: string
+          logo_url: string | null
+          name: string
+          region_id: string | null
+          stream_url: string | null
+          tagline: string | null
+          updated_at: string
+          whatsapp_commercial: string | null
+          whatsapp_station: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string
+          frequency: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          region_id?: string | null
+          stream_url?: string | null
+          tagline?: string | null
+          updated_at?: string
+          whatsapp_commercial?: string | null
+          whatsapp_station?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string
+          frequency?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          region_id?: string | null
+          stream_url?: string | null
+          tagline?: string | null
+          updated_at?: string
+          whatsapp_commercial?: string | null
+          whatsapp_station?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radios_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regions: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_manage_news: {
+        Args: { _region_id: string; _user_id: string }
+        Returns: boolean
+      }
+      get_user_region_id: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin_or_supervisor: { Args: { _user_id: string }; Returns: boolean }
+      is_editor_or_reporter: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "supervisor" | "editor" | "reporter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +416,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "supervisor", "editor", "reporter"],
+    },
   },
 } as const
