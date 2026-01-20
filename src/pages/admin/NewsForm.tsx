@@ -1,0 +1,320 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
+
+interface Region {
+  id: string;
+  name: string;
+}
+
+export default function NewsForm() {
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [regions, setRegions] = useState<Region[]>([]);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    excerpt: "",
+    content: "",
+    image_url: "",
+    region_id: "",
+    status: "draft",
+    featured: false,
+  });
+
+  useEffect(() => {
+    // Fetch regions
+    supabase.from("regions").select("id, name").then(({ data }) => {
+      setRegions(data || []);
+    });
+
+    // Fetch news if editing
+    if (isEdit && id) {
+      setLoading(true);
+      supabase
+        .from("news")
+        .select("*")
+        .eq("id", id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            toast({
+              title: "Erro ao carregar",
+              description: error.message,
+              variant: "destructive",
+            });
+            navigate("/admin/noticias");
+          } else if (data) {
+            setFormData({
+              title: data.title || "",
+              slug: data.slug || "",
+              excerpt: data.excerpt || "",
+              content: data.content || "",
+              image_url: data.image_url || "",
+              region_id: data.region_id || "",
+              status: data.status || "draft",
+              featured: data.featured || false,
+            });
+          }
+          setLoading(false);
+        });
+    }
+  }, [id, isEdit]);
+
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
+
+  const handleTitleChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: value,
+      slug: generateSlug(value),
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    const newsData = {
+      ...formData,
+      author_id: user?.id,
+      published_at: formData.status === "published" ? new Date().toISOString() : null,
+    };
+
+    let error;
+
+    if (isEdit && id) {
+      const { error: updateError } = await supabase
+        .from("news")
+        .update(newsData)
+        .eq("id", id);
+      error = updateError;
+    } else {
+      const { error: insertError } = await supabase.from("news").insert(newsData);
+      error = insertError;
+    }
+
+    if (error) {
+      toast({
+        title: "Erro ao salvar",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: isEdit ? "Notícia atualizada" : "Notícia criada",
+        description: "As alterações foram salvas com sucesso.",
+      });
+      navigate("/admin/noticias");
+    }
+
+    setSaving(false);
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-display font-bold">
+              {isEdit ? "Editar Notícia" : "Nova Notícia"}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {isEdit ? "Atualize os dados da notícia" : "Preencha os dados para criar uma notícia"}
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações Básicas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Título *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  placeholder="Digite o título da notícia"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug (URL)</Label>
+                <Input
+                  id="slug"
+                  value={formData.slug}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                  placeholder="titulo-da-noticia"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="excerpt">Resumo</Label>
+                <Textarea
+                  id="excerpt"
+                  value={formData.excerpt}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))}
+                  placeholder="Breve descrição da notícia"
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content">Conteúdo *</Label>
+                <Textarea
+                  id="content"
+                  value={formData.content}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
+                  placeholder="Escreva o conteúdo completo da notícia..."
+                  rows={10}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="image_url">URL da Imagem</Label>
+                <Input
+                  id="image_url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
+                  placeholder="https://exemplo.com/imagem.jpg"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="region">Região *</Label>
+                  <Select
+                    value={formData.region_id}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, region_id: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a região" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {regions.map((region) => (
+                        <SelectItem key={region.id} value={region.id}>
+                          {region.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, status: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Rascunho</SelectItem>
+                      <SelectItem value="published">Publicado</SelectItem>
+                      <SelectItem value="archived">Arquivado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="font-medium">Notícia em Destaque</p>
+                  <p className="text-sm text-muted-foreground">
+                    Marcar como destaque na página inicial
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.featured}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, featured: checked }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end gap-4">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving} className="gap-2">
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  {isEdit ? "Atualizar" : "Criar"} Notícia
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </AdminLayout>
+  );
+}
