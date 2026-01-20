@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Headphones } from "lucide-react";
+import { Menu, X, Headphones, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import grupoLogo from "@/assets/logos/grupo-jsidney.png";
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Notícias", href: "/noticias" },
   { label: "Comunicadores", href: "/comunicadores" },
   { label: "Contato", href: "/contato" },
+  { label: "Admin", href: "/admin", isAdmin: true },
 ];
 
 export function Header() {
@@ -41,9 +42,11 @@ export function Header() {
                   size="sm"
                   className={cn(
                     "rounded-full px-4",
-                    isActive && "bg-primary/10 text-primary"
+                    isActive && "bg-primary/10 text-primary",
+                    item.isAdmin && "gap-1.5"
                   )}
                 >
+                  {item.isAdmin && <Settings className="w-3.5 h-3.5" />}
                   {item.label}
                 </Button>
               </Link>
@@ -92,10 +95,11 @@ export function Header() {
                   <Button
                     variant={isActive ? "navActive" : "nav"}
                     className={cn(
-                      "w-full justify-start",
+                      "w-full justify-start gap-2",
                       isActive && "bg-primary/10 text-primary"
                     )}
                   >
+                    {item.isAdmin && <Settings className="w-4 h-4" />}
                     {item.label}
                   </Button>
                 </Link>
