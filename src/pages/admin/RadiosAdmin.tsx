@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +62,7 @@ interface Region {
 }
 
 export default function RadiosAdmin() {
+  const queryClient = useQueryClient();
   const [radios, setRadios] = useState<RadioItem[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +162,7 @@ export default function RadiosAdmin() {
         variant: "destructive",
       });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["radios"] });
       toast({
         title: editId ? "Rádio atualizada" : "Rádio criada",
         description: "As alterações foram salvas com sucesso.",
@@ -293,15 +297,12 @@ export default function RadiosAdmin() {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="logo_url">URL do Logo</Label>
-                  <Input
-                    id="logo_url"
-                    value={formData.logo_url}
-                    onChange={(e) => setFormData((p) => ({ ...p, logo_url: e.target.value }))}
-                    placeholder="https://..."
-                  />
-                </div>
+                <ImageUpload
+                  value={formData.logo_url}
+                  onChange={(url) => setFormData((p) => ({ ...p, logo_url: url }))}
+                  label="Logo da Rádio"
+                  folder="radios"
+                />
                 <div className="space-y-2">
                   <Label htmlFor="color">Cor (HSL)</Label>
                   <Input
