@@ -103,7 +103,7 @@ export function useFeaturedNews() {
         .eq("status", "published")
         .eq("featured", true)
         .order("published_at", { ascending: false })
-        .limit(2);
+        .limit(4);
       
       if (error) throw error;
       return data as NewsArticle[];

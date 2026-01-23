@@ -5,7 +5,6 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { LatestNews } from "@/components/home/LatestNews";
 import { RegionalNews } from "@/components/home/RegionalNews";
 import { YouTubeEmbed } from "@/components/home/YouTubeEmbed";
-import { RadioPartners } from "@/components/home/RadioPartners";
 import { CommunicatorsPreview } from "@/components/home/CommunicatorsPreview";
 
 const Index = () => {
@@ -19,9 +18,6 @@ const Index = () => {
         
         {/* Hero with Featured News */}
         <HeroSection />
-
-        {/* Radio Partners Section - Moved above Latest News */}
-        <RadioPartners />
         
         {/* Latest News Grid */}
         <LatestNews />
