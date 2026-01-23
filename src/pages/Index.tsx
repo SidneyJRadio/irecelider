@@ -1,7 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { RadioPlayer } from "@/components/home/RadioPlayer";
-import { RadioStrip } from "@/components/home/RadioStrip";
 import { HeroSection } from "@/components/home/HeroSection";
 import { LatestNews } from "@/components/home/LatestNews";
 import { RegionalNews } from "@/components/home/RegionalNews";
@@ -13,9 +12,6 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      {/* Radio Strip - Below Header */}
-      <RadioStrip />
       
       <main className="flex-1">
         {/* Radio Player - Sticky at top */}
