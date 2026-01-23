@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Headphones, Settings } from "lucide-react";
+import { Menu, X, Headphones, Settings, Radio, Phone, MessageCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import grupoLogo from "@/assets/logos/grupo-jsidney.png";
+import { useRadios } from "@/hooks/useData";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { label: "Início", href: "/" },
@@ -15,7 +23,14 @@ const navItems = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isRadiosOpen, setIsRadiosOpen] = useState(false);
   const location = useLocation();
+  const { data: radios } = useRadios();
+
+  const formatWhatsApp = (number: string | null) => {
+    if (!number) return null;
+    return `https://wa.me/${number.replace(/\D/g, '')}`;
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -52,6 +67,72 @@ export function Header() {
               </Link>
             );
           })}
+
+          {/* Nossas Rádios Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="nav"
+                size="sm"
+                className="rounded-full px-4 gap-1.5"
+              >
+                <Radio className="w-3.5 h-3.5" />
+                Nossas Rádios
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              {radios?.map((radio, index) => (
+                <div key={radio.id}>
+                  <div className="p-3">
+                    <div className="flex items-center gap-3 mb-2">
+                      {radio.logo_url && (
+                        <img 
+                          src={radio.logo_url} 
+                          alt={radio.name}
+                          className="w-10 h-10 rounded-lg object-contain bg-muted p-1"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-sm" style={{ color: radio.color || undefined }}>
+                          {radio.name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">{radio.frequency}</p>
+                        {radio.tagline && (
+                          <p className="text-xs text-muted-foreground italic">{radio.tagline}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {radio.whatsapp_station && (
+                        <a 
+                          href={formatWhatsApp(radio.whatsapp_station)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700"
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                          Estúdio
+                        </a>
+                      )}
+                      {radio.whatsapp_commercial && (
+                        <a 
+                          href={formatWhatsApp(radio.whatsapp_commercial)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700"
+                        >
+                          <Phone className="w-3 h-3" />
+                          Comercial
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  {index < (radios?.length || 0) - 1 && <DropdownMenuSeparator />}
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         {/* Live Radio Button - Desktop */}
@@ -105,6 +186,70 @@ export function Header() {
                 </Link>
               );
             })}
+
+            {/* Nossas Rádios - Mobile */}
+            <div className="border-t border-border pt-2 mt-2">
+              <Button
+                variant="nav"
+                className="w-full justify-between gap-2"
+                onClick={() => setIsRadiosOpen(!isRadiosOpen)}
+              >
+                <span className="flex items-center gap-2">
+                  <Radio className="w-4 h-4" />
+                  Nossas Rádios
+                </span>
+                <ChevronDown className={cn("w-4 h-4 transition-transform", isRadiosOpen && "rotate-180")} />
+              </Button>
+              
+              {isRadiosOpen && (
+                <div className="mt-2 space-y-3 pl-4">
+                  {radios?.map((radio) => (
+                    <div key={radio.id} className="p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3 mb-2">
+                        {radio.logo_url && (
+                          <img 
+                            src={radio.logo_url} 
+                            alt={radio.name}
+                            className="w-8 h-8 rounded object-contain bg-background p-1"
+                          />
+                        )}
+                        <div>
+                          <h4 className="font-semibold text-sm" style={{ color: radio.color || undefined }}>
+                            {radio.name}
+                          </h4>
+                          <p className="text-xs text-muted-foreground">{radio.frequency}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        {radio.whatsapp_station && (
+                          <a 
+                            href={formatWhatsApp(radio.whatsapp_station)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-green-600"
+                          >
+                            <MessageCircle className="w-3 h-3" />
+                            Estúdio
+                          </a>
+                        )}
+                        {radio.whatsapp_commercial && (
+                          <a 
+                            href={formatWhatsApp(radio.whatsapp_commercial)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-green-600"
+                          >
+                            <Phone className="w-3 h-3" />
+                            Comercial
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="pt-2 border-t border-border mt-2">
               <Link to="/#player" onClick={() => setIsMenuOpen(false)}>
                 <Button variant="accent" className="w-full gap-2">

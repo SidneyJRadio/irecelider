@@ -10,16 +10,16 @@ export function HeroSection() {
   const { data: featuredNews, isLoading } = useFeaturedNews();
 
   const mainNews = featuredNews?.[0];
-  const secondaryNews = featuredNews?.[1];
 
   if (isLoading) {
     return (
       <section className="py-6 md:py-8">
         <div className="container">
           <Skeleton className="h-10 w-full mb-6 rounded-lg" />
-          <div className="grid md:grid-cols-3 gap-4 md:gap-6">
-            <Skeleton className="md:col-span-2 aspect-[16/10] rounded-xl" />
-            <Skeleton className="aspect-[16/10] rounded-xl" />
+          <div className="flex flex-col gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))}
           </div>
         </div>
       </section>
@@ -43,79 +43,50 @@ export function HeroSection() {
           </p>
         </div>
 
-        {/* Featured News Grid */}
-        <div className="grid md:grid-cols-3 gap-4 md:gap-6">
-          {/* Main Featured */}
-          <article className="md:col-span-2 group relative overflow-hidden rounded-xl shadow-card hover:shadow-hover transition-all duration-300">
-            <Link to={`/noticias/${mainNews.slug}`}>
-              <div className="aspect-[16/10] md:aspect-[16/9]">
-                <img
-                  src={mainNews.image_url || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80"}
-                  alt={mainNews.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="px-2 py-1 text-xs font-bold uppercase rounded"
-                    style={{
-                      backgroundColor: mainNews.regions?.color || "hsl(220, 70%, 45%)",
-                      color: "white",
-                    }}
-                  >
-                    {mainNews.regions?.name || "Notícia"}
-                  </span>
-                  <span className="text-xs text-white/70">
-                    {mainNews.published_at && formatDistanceToNow(new Date(mainNews.published_at), {
-                      addSuffix: true,
-                      locale: ptBR,
-                    })}
-                  </span>
-                </div>
-                <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-white leading-tight mb-2">
-                  {mainNews.title}
-                </h2>
-                <p className="text-sm md:text-base text-white/80 line-clamp-2 mb-3">
-                  {mainNews.excerpt}
-                </p>
-                <p className="text-xs text-white/60">
-                  Por Redação
-                </p>
-              </div>
-            </Link>
-          </article>
-
-          {/* Secondary Featured */}
-          {secondaryNews && (
-            <article className="group relative overflow-hidden rounded-xl shadow-card hover:shadow-hover transition-all duration-300">
-              <Link to={`/noticias/${secondaryNews.slug}`}>
-                <div className="aspect-[16/10] md:aspect-auto md:h-full">
+        {/* Featured News - Single Column */}
+        <div className="flex flex-col gap-4">
+          {featuredNews?.map((news, index) => (
+            <article 
+              key={news.id} 
+              className="group relative overflow-hidden rounded-xl shadow-card hover:shadow-hover transition-all duration-300 animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <Link to={`/noticias/${news.slug}`} className="flex flex-col md:flex-row">
+                <div className="md:w-2/5 aspect-[16/9] md:aspect-auto md:h-48">
                   <img
-                    src={secondaryNews.image_url || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80"}
-                    alt={secondaryNews.title}
+                    src={news.image_url || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80"}
+                    alt={news.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <span
-                    className="inline-block px-2 py-1 text-xs font-bold uppercase rounded mb-2"
-                    style={{
-                      backgroundColor: secondaryNews.regions?.color || "hsl(220, 70%, 45%)",
-                      color: "white",
-                    }}
-                  >
-                    {secondaryNews.regions?.name || "Notícia"}
-                  </span>
-                  <h3 className="font-display text-lg font-bold text-white leading-tight">
-                    {secondaryNews.title}
-                  </h3>
+                <div className="flex-1 p-4 md:p-5 bg-card flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="px-2 py-1 text-xs font-bold uppercase rounded"
+                      style={{
+                        backgroundColor: news.regions?.color || "hsl(220, 70%, 45%)",
+                        color: "white",
+                      }}
+                    >
+                      {news.regions?.name || "Notícia"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {news.published_at && formatDistanceToNow(new Date(news.published_at), {
+                        addSuffix: true,
+                        locale: ptBR,
+                      })}
+                    </span>
+                  </div>
+                  <h2 className="font-display text-lg md:text-xl font-bold text-foreground leading-tight mb-2 group-hover:text-primary transition-colors">
+                    {news.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {news.excerpt}
+                  </p>
                 </div>
               </Link>
             </article>
-          )}
+          ))}
         </div>
 
         {/* CTA Button */}
