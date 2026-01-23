@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalhe from "./pages/NoticiaDetalhe";
 import Comunicadores from "./pages/Comunicadores";
+import Radios from "./pages/Radios";
 import Contato from "./pages/Contato";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/admin/Login";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/noticias" element={<Noticias />} />
             <Route path="/noticias/:slug" element={<NoticiaDetalhe />} />
+            <Route path="/radios" element={<Radios />} />
             <Route path="/comunicadores" element={<Comunicadores />} />
             <Route path="/contato" element={<Contato />} />
             
