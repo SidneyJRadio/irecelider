@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Clock, User, Eye } from "lucide-react";
+import { ArrowLeft, Clock, Eye } from "lucide-react";
 
 export default function NoticiaDetalhe() {
   const { slug } = useParams();
@@ -42,6 +42,28 @@ export default function NoticiaDetalhe() {
     },
     enabled: !!news?.id,
   });
+
+  const extractVideoId = (url: string): string | null => {
+    if (!url) return null;
+    
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+
+    if (url.length === 11 && !url.includes("/")) {
+      return url;
+    }
+
+    return null;
+  };
 
   if (isLoading) {
     return (
@@ -85,6 +107,38 @@ export default function NoticiaDetalhe() {
       </div>
     );
   }
+
+  const videoId = news.video_url ? extractVideoId(news.video_url) : null;
+  const imagePosition = news.image_position || "top";
+  const videoPosition = news.video_position;
+
+  const renderImage = () => {
+    if (!news.image_url) return null;
+    return (
+      <div className="aspect-video w-full overflow-hidden rounded-xl mb-8">
+        <img
+          src={news.image_url}
+          alt={news.title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  };
+
+  const renderVideo = () => {
+    if (!videoId || !videoPosition || videoPosition === "none") return null;
+    return (
+      <div className="aspect-video w-full overflow-hidden rounded-xl mb-8 bg-black">
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title="Vídeo da notícia"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -142,16 +196,9 @@ export default function NoticiaDetalhe() {
             )}
           </div>
 
-          {/* Featured Image */}
-          {news.image_url && (
-            <div className="aspect-video w-full overflow-hidden rounded-xl mb-8">
-              <img
-                src={news.image_url}
-                alt={news.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          {/* Top Media */}
+          {imagePosition === "top" && renderImage()}
+          {videoPosition === "top" && renderVideo()}
 
           {/* Content */}
           <div className="prose prose-lg max-w-none">
@@ -161,6 +208,14 @@ export default function NoticiaDetalhe() {
               </p>
             ))}
           </div>
+
+          {/* Bottom Media */}
+          {imagePosition === "bottom" && (
+            <div className="mt-8">{renderImage()}</div>
+          )}
+          {videoPosition === "bottom" && (
+            <div className="mt-8">{renderVideo()}</div>
+          )}
         </article>
       </main>
 

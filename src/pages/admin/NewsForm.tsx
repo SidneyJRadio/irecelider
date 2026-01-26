@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Video, Image as ImageIcon } from "lucide-react";
 
 interface Region {
   id: string;
@@ -47,6 +47,9 @@ export default function NewsForm() {
     region_id: "",
     status: "draft",
     featured: false,
+    video_url: "",
+    image_position: "top",
+    video_position: "",
   });
 
   useEffect(() => {
@@ -81,6 +84,9 @@ export default function NewsForm() {
               region_id: data.region_id || "",
               status: data.status || "draft",
               featured: data.featured || false,
+              video_url: data.video_url || "",
+              image_position: data.image_position || "top",
+              video_position: data.video_position || "",
             });
           }
           setLoading(false);
@@ -105,6 +111,29 @@ export default function NewsForm() {
     }));
   };
 
+  const extractVideoId = (url: string): string | null => {
+    if (!url) return null;
+    
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+
+    // Se não é URL, assume que já é um ID
+    if (url.length === 11 && !url.includes("/")) {
+      return url;
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -113,6 +142,7 @@ export default function NewsForm() {
       ...formData,
       author_id: user?.id,
       published_at: formData.status === "published" ? new Date().toISOString() : null,
+      video_position: formData.video_position || null,
     };
 
     let error;
@@ -159,6 +189,8 @@ export default function NewsForm() {
       </AdminLayout>
     );
   }
+
+  const videoId = extractVideoId(formData.video_url);
 
   return (
     <AdminLayout>
@@ -226,13 +258,98 @@ export default function NewsForm() {
                   required
                 />
               </div>
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                <CardTitle>Imagem de Capa</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <ImageUpload
                 value={formData.image_url}
                 onChange={(url) => setFormData((prev) => ({ ...prev, image_url: url }))}
-                label="Imagem de Capa"
+                label="Imagem"
                 folder="news"
               />
+
+              <div className="space-y-2">
+                <Label>Posição da Imagem na Notícia</Label>
+                <Select
+                  value={formData.image_position}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, image_position: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="top">No topo (antes do conteúdo)</SelectItem>
+                    <SelectItem value="bottom">No final (após o conteúdo)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-muted-foreground" />
+                <CardTitle>Vídeo (Opcional)</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="video_url">URL do Vídeo (YouTube)</Label>
+                <Input
+                  id="video_url"
+                  value={formData.video_url}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, video_url: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=... ou ID do vídeo"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cole o link completo do YouTube ou apenas o ID do vídeo
+                </p>
+              </div>
+
+              {videoId && (
+                <div className="space-y-2">
+                  <Label>Preview do Vídeo</Label>
+                  <div className="aspect-video rounded-lg overflow-hidden bg-black border border-border max-w-md">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title="Preview do vídeo"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Posição do Vídeo na Notícia</Label>
+                <Select
+                  value={formData.video_position}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, video_position: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione onde exibir o vídeo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não exibir vídeo</SelectItem>
+                    <SelectItem value="top">No topo (antes do conteúdo)</SelectItem>
+                    <SelectItem value="bottom">No final (após o conteúdo)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
 

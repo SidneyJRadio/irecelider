@@ -40,32 +40,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ExternalLink } from "lucide-react";
 
-interface Communicator {
+interface Banner {
   id: string;
-  name: string;
-  role: string;
-  program: string | null;
-  photo_url: string | null;
-  instagram: string | null;
-  radio_id: string | null;
+  title: string;
+  image_url: string;
+  link_url: string | null;
+  position: string;
+  slot: number;
   active: boolean;
-  radios: { name: string } | null;
+  display_order: number;
 }
 
-interface RadioOption {
-  id: string;
-  name: string;
-}
-
-export default function CommunicatorsAdmin() {
+export default function BannersAdmin() {
   const queryClient = useQueryClient();
-  const [communicators, setCommunicators] = useState<Communicator[]>([]);
-  const [radios, setRadios] = useState<RadioOption[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -73,27 +65,26 @@ export default function CommunicatorsAdmin() {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    name: "",
-    role: "Locutor",
-    program: "",
-    photo_url: "",
-    instagram: "",
-    radio_id: "",
+    title: "",
+    image_url: "",
+    link_url: "",
+    position: "above_news",
+    slot: 1,
     active: true,
+    display_order: 0,
   });
 
   const fetchData = async () => {
     setLoading(true);
-    const [commRes, radiosRes] = await Promise.all([
-      supabase
-        .from("communicators")
-        .select("id, name, role, program, photo_url, instagram, radio_id, active, radios(name)")
-        .order("display_order"),
-      supabase.from("radios").select("id, name"),
-    ]);
+    const { data, error } = await supabase
+      .from("banners")
+      .select("*")
+      .order("position")
+      .order("slot");
 
-    setCommunicators(commRes.data || []);
-    setRadios(radiosRes.data || []);
+    if (!error) {
+      setBanners(data || []);
+    }
     setLoading(false);
   };
 
@@ -103,28 +94,28 @@ export default function CommunicatorsAdmin() {
 
   const resetForm = () => {
     setFormData({
-      name: "",
-      role: "Locutor",
-      program: "",
-      photo_url: "",
-      instagram: "",
-      radio_id: "",
+      title: "",
+      image_url: "",
+      link_url: "",
+      position: "above_news",
+      slot: 1,
       active: true,
+      display_order: 0,
     });
     setEditId(null);
   };
 
-  const handleEdit = (comm: Communicator) => {
+  const handleEdit = (banner: Banner) => {
     setFormData({
-      name: comm.name,
-      role: comm.role || "Locutor",
-      program: comm.program || "",
-      photo_url: comm.photo_url || "",
-      instagram: comm.instagram || "",
-      radio_id: comm.radio_id || "",
-      active: comm.active ?? true,
+      title: banner.title,
+      image_url: banner.image_url,
+      link_url: banner.link_url || "",
+      position: banner.position,
+      slot: banner.slot,
+      active: banner.active,
+      display_order: banner.display_order,
     });
-    setEditId(comm.id);
+    setEditId(banner.id);
     setDialogOpen(true);
   };
 
@@ -134,19 +125,19 @@ export default function CommunicatorsAdmin() {
 
     const data = {
       ...formData,
-      radio_id: formData.radio_id || null,
+      link_url: formData.link_url || null,
     };
 
     let error;
 
     if (editId) {
       const { error: updateError } = await supabase
-        .from("communicators")
+        .from("banners")
         .update(data)
         .eq("id", editId);
       error = updateError;
     } else {
-      const { error: insertError } = await supabase.from("communicators").insert(data);
+      const { error: insertError } = await supabase.from("banners").insert(data);
       error = insertError;
     }
 
@@ -157,9 +148,9 @@ export default function CommunicatorsAdmin() {
         variant: "destructive",
       });
     } else {
-      queryClient.invalidateQueries({ queryKey: ["communicators"] });
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
       toast({
-        title: editId ? "Comunicador atualizado" : "Comunicador criado",
+        title: editId ? "Banner atualizado" : "Banner criado",
         description: "As alterações foram salvas com sucesso.",
       });
       setDialogOpen(false);
@@ -172,7 +163,7 @@ export default function CommunicatorsAdmin() {
 
   const handleToggleActive = async (id: string, active: boolean) => {
     const { error } = await supabase
-      .from("communicators")
+      .from("banners")
       .update({ active })
       .eq("id", id);
 
@@ -183,13 +174,13 @@ export default function CommunicatorsAdmin() {
         variant: "destructive",
       });
     } else {
-      queryClient.invalidateQueries({ queryKey: ["communicators"] });
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
       fetchData();
     }
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("communicators").delete().eq("id", id);
+    const { error } = await supabase.from("banners").delete().eq("id", id);
 
     if (error) {
       toast({
@@ -199,10 +190,21 @@ export default function CommunicatorsAdmin() {
       });
     } else {
       toast({
-        title: "Comunicador excluído",
-        description: "O comunicador foi removido com sucesso.",
+        title: "Banner excluído",
+        description: "O banner foi removido com sucesso.",
       });
       fetchData();
+    }
+  };
+
+  const getPositionLabel = (position: string) => {
+    switch (position) {
+      case "above_news":
+        return "Acima das Notícias";
+      case "above_communicators":
+        return "Acima dos Comunicadores";
+      default:
+        return position;
     }
   };
 
@@ -211,9 +213,9 @@ export default function CommunicatorsAdmin() {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold">Comunicadores</h1>
+            <h1 className="text-2xl md:text-3xl font-display font-bold">Banners</h1>
             <p className="text-muted-foreground mt-1">
-              Gerencie os comunicadores das rádios
+              Gerencie os banners publicitários do site
             </p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -223,81 +225,83 @@ export default function CommunicatorsAdmin() {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
-                Novo Comunicador
+                Novo Banner
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
-                  {editId ? "Editar Comunicador" : "Novo Comunicador"}
+                  {editId ? "Editar Banner" : "Novo Banner"}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome *</Label>
+                  <Label htmlFor="title">Título (identificação interna) *</Label>
                   <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                    placeholder="Ex: Banner Loja X - Janeiro"
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">Função</Label>
-                  <Input
-                    id="role"
-                    value={formData.role}
-                    onChange={(e) => setFormData((p) => ({ ...p, role: e.target.value }))}
-                    placeholder="Locutor, Repórter, etc."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="program">Programa</Label>
-                  <Input
-                    id="program"
-                    value={formData.program}
-                    onChange={(e) => setFormData((p) => ({ ...p, program: e.target.value }))}
-                    placeholder="Nome do programa"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="radio">Rádio</Label>
-                  <Select
-                    value={formData.radio_id}
-                    onValueChange={(value) => setFormData((p) => ({ ...p, radio_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a rádio" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {radios.map((radio) => (
-                        <SelectItem key={radio.id} value={radio.id}>
-                          {radio.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="instagram">Instagram</Label>
-                  <Input
-                    id="instagram"
-                    value={formData.instagram}
-                    onChange={(e) => setFormData((p) => ({ ...p, instagram: e.target.value }))}
-                    placeholder="@usuario"
-                  />
-                </div>
+
                 <ImageUpload
-                  value={formData.photo_url}
-                  onChange={(url) => setFormData((p) => ({ ...p, photo_url: url }))}
-                  label="Foto do Comunicador"
-                  folder="communicators"
+                  value={formData.image_url}
+                  onChange={(url) => setFormData((p) => ({ ...p, image_url: url }))}
+                  label="Imagem do Banner *"
+                  folder="banners"
                 />
+
+                <div className="space-y-2">
+                  <Label htmlFor="link_url">Link de Destino</Label>
+                  <Input
+                    id="link_url"
+                    value={formData.link_url}
+                    onChange={(e) => setFormData((p) => ({ ...p, link_url: e.target.value }))}
+                    placeholder="https://exemplo.com"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Posição</Label>
+                    <Select
+                      value={formData.position}
+                      onValueChange={(value) => setFormData((p) => ({ ...p, position: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="above_news">Acima das Notícias</SelectItem>
+                        <SelectItem value="above_communicators">Acima dos Comunicadores</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Slot</Label>
+                    <Select
+                      value={formData.slot.toString()}
+                      onValueChange={(value) => setFormData((p) => ({ ...p, slot: parseInt(value) }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Slot 1 (Esquerda)</SelectItem>
+                        <SelectItem value="2">Slot 2 (Direita)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="font-medium">Comunicador Ativo</p>
+                    <p className="font-medium">Banner Ativo</p>
                     <p className="text-sm text-muted-foreground">
-                      Exibir no site
+                      Exibir este banner no site
                     </p>
                   </div>
                   <Switch
@@ -307,11 +311,12 @@ export default function CommunicatorsAdmin() {
                     }
                   />
                 </div>
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={saving}>
+                  <Button type="submit" disabled={saving || !formData.image_url}>
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
                   </Button>
                 </div>
@@ -325,58 +330,68 @@ export default function CommunicatorsAdmin() {
             <div className="flex items-center justify-center p-12">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
-          ) : communicators.length === 0 ? (
+          ) : banners.length === 0 ? (
             <div className="text-center p-12 text-muted-foreground">
-              Nenhum comunicador cadastrado
+              Nenhum banner cadastrado
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Comunicador</TableHead>
-                  <TableHead className="hidden md:table-cell">Programa</TableHead>
-                  <TableHead className="hidden md:table-cell">Rádio</TableHead>
+                  <TableHead>Banner</TableHead>
+                  <TableHead className="hidden md:table-cell">Posição</TableHead>
                   <TableHead className="hidden md:table-cell">Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {communicators.map((comm) => (
-                  <TableRow key={comm.id} className={!comm.active ? "opacity-60" : ""}>
+                {banners.map((banner) => (
+                  <TableRow key={banner.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={comm.photo_url || ""} />
-                          <AvatarFallback>
-                            {comm.name.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="w-20 h-10 rounded overflow-hidden bg-muted">
+                          <img
+                            src={banner.image_url}
+                            alt={banner.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                         <div>
-                          <p className="font-medium">{comm.name}</p>
-                          <p className="text-xs text-muted-foreground">{comm.role}</p>
+                          <p className="font-medium">{banner.title}</p>
+                          {banner.link_url && (
+                            <a
+                              href={banner.link_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Ver link
+                            </a>
+                          )}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {comm.program || "—"}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {comm.radios?.name || "—"}
+                      <div>
+                        <p className="text-sm">{getPositionLabel(banner.position)}</p>
+                        <p className="text-xs text-muted-foreground">Slot {banner.slot}</p>
+                      </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={comm.active}
-                          onCheckedChange={(checked) => handleToggleActive(comm.id, checked)}
+                          checked={banner.active}
+                          onCheckedChange={(checked) => handleToggleActive(banner.id, checked)}
                         />
-                        <Badge variant={comm.active ? "default" : "secondary"}>
-                          {comm.active ? "Ativo" : "Inativo"}
+                        <Badge variant={banner.active ? "default" : "secondary"}>
+                          {banner.active ? "Ativo" : "Inativo"}
                         </Badge>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(comm)}>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(banner)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
@@ -387,7 +402,7 @@ export default function CommunicatorsAdmin() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir comunicador?</AlertDialogTitle>
+                              <AlertDialogTitle>Excluir banner?</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Esta ação não pode ser desfeita.
                               </AlertDialogDescription>
@@ -395,7 +410,7 @@ export default function CommunicatorsAdmin() {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(comm.id)}
+                                onClick={() => handleDelete(banner.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
                                 Excluir
