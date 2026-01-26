@@ -5,6 +5,8 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +55,7 @@ interface RadioItem {
   region_id: string | null;
   logo_url: string | null;
   color: string | null;
+  active: boolean;
   regions: { name: string } | null;
 }
 
@@ -81,6 +84,7 @@ export default function RadiosAdmin() {
     region_id: "",
     logo_url: "",
     color: "hsl(220, 70%, 45%)",
+    active: true,
   });
 
   const fetchData = async () => {
@@ -113,6 +117,7 @@ export default function RadiosAdmin() {
       region_id: "",
       logo_url: "",
       color: "hsl(220, 70%, 45%)",
+      active: true,
     });
     setEditId(null);
   };
@@ -128,6 +133,7 @@ export default function RadiosAdmin() {
       region_id: radio.region_id || "",
       logo_url: radio.logo_url || "",
       color: radio.color || "hsl(220, 70%, 45%)",
+      active: radio.active ?? true,
     });
     setEditId(radio.id);
     setDialogOpen(true);
@@ -173,6 +179,24 @@ export default function RadiosAdmin() {
     }
 
     setSaving(false);
+  };
+
+  const handleToggleActive = async (id: string, active: boolean) => {
+    const { error } = await supabase
+      .from("radios")
+      .update({ active })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["radios"] });
+      fetchData();
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -312,6 +336,20 @@ export default function RadiosAdmin() {
                     placeholder="hsl(220, 70%, 45%)"
                   />
                 </div>
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium">Rádio Ativa</p>
+                    <p className="text-sm text-muted-foreground">
+                      Exibir no site
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.active}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, active: checked }))
+                    }
+                  />
+                </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar
@@ -341,18 +379,27 @@ export default function RadiosAdmin() {
                   <TableHead>Rádio</TableHead>
                   <TableHead className="hidden md:table-cell">Frequência</TableHead>
                   <TableHead className="hidden md:table-cell">Região</TableHead>
+                  <TableHead className="hidden md:table-cell">Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {radios.map((radio) => (
-                  <TableRow key={radio.id}>
+                  <TableRow key={radio.id} className={!radio.active ? "opacity-60" : ""}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: radio.color || "hsl(220, 70%, 45%)" }}
-                        />
+                        {radio.logo_url ? (
+                          <img
+                            src={radio.logo_url}
+                            alt={radio.name}
+                            className="w-10 h-10 rounded object-contain bg-muted"
+                          />
+                        ) : (
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: radio.color || "hsl(220, 70%, 45%)" }}
+                          />
+                        )}
                         <div>
                           <p className="font-medium">{radio.name}</p>
                           <p className="text-xs text-muted-foreground">{radio.tagline}</p>
@@ -364,6 +411,17 @@ export default function RadiosAdmin() {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {radio.regions?.name || "—"}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={radio.active}
+                          onCheckedChange={(checked) => handleToggleActive(radio.id, checked)}
+                        />
+                        <Badge variant={radio.active ? "default" : "secondary"}>
+                          {radio.active ? "Ativa" : "Inativa"}
+                        </Badge>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

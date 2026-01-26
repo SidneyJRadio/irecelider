@@ -21,6 +21,8 @@ import CommunicatorsAdmin from "./pages/admin/CommunicatorsAdmin";
 import RadiosAdmin from "./pages/admin/RadiosAdmin";
 import RegionsAdmin from "./pages/admin/RegionsAdmin";
 import UsersAdmin from "./pages/admin/UsersAdmin";
+import BannersAdmin from "./pages/admin/BannersAdmin";
+import SettingsAdmin from "./pages/admin/SettingsAdmin";
 
 const queryClient = new QueryClient();
 
@@ -49,8 +51,10 @@ const App = () => (
               <Route path="/admin/noticias/:id" element={<NewsForm />} />
               <Route path="/admin/comunicadores" element={<CommunicatorsAdmin />} />
               <Route path="/admin/radios" element={<RadiosAdmin />} />
+              <Route path="/admin/banners" element={<BannersAdmin />} />
               <Route path="/admin/regioes" element={<RegionsAdmin />} />
               <Route path="/admin/usuarios" element={<UsersAdmin />} />
+              <Route path="/admin/configuracoes" element={<SettingsAdmin />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

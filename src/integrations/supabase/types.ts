@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      banners: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          link_url: string | null
+          position: string
+          slot: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          link_url?: string | null
+          position?: string
+          slot?: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          link_url?: string | null
+          position?: string
+          slot?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       communicators: {
         Row: {
           active: boolean | null
@@ -75,6 +114,7 @@ export type Database = {
           excerpt: string | null
           featured: boolean | null
           id: string
+          image_position: string | null
           image_url: string | null
           published_at: string | null
           region_id: string | null
@@ -82,6 +122,8 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string
+          video_position: string | null
+          video_url: string | null
           views: number | null
         }
         Insert: {
@@ -91,6 +133,7 @@ export type Database = {
           excerpt?: string | null
           featured?: boolean | null
           id?: string
+          image_position?: string | null
           image_url?: string | null
           published_at?: string | null
           region_id?: string | null
@@ -98,6 +141,8 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string
+          video_position?: string | null
+          video_url?: string | null
           views?: number | null
         }
         Update: {
@@ -107,6 +152,7 @@ export type Database = {
           excerpt?: string | null
           featured?: boolean | null
           id?: string
+          image_position?: string | null
           image_url?: string | null
           published_at?: string | null
           region_id?: string | null
@@ -114,6 +160,8 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string
+          video_position?: string | null
+          video_url?: string | null
           views?: number | null
         }
         Relationships: [
@@ -244,6 +292,27 @@ export type Database = {
           id?: string
           name?: string
           slug?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string | null
+          value: string | null
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string | null
+          value?: string | null
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string | null
         }
         Relationships: []
       }

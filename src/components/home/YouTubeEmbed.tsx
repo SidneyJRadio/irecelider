@@ -1,10 +1,34 @@
+import { useQuery } from "@tanstack/react-query";
 import { Youtube, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 
 export function YouTubeEmbed() {
-  // In production, this would fetch the latest video from YouTube API
-  const latestVideoId = "CyKl-0Y1ZDg";
-  const channelUrl = "https://youtube.com/@example";
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["site-settings-youtube"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("*")
+        .in("key", ["youtube_video_id", "youtube_channel_url"]);
+
+      if (error) throw error;
+
+      const settingsMap: Record<string, string> = {};
+      data?.forEach((setting) => {
+        settingsMap[setting.key] = setting.value || "";
+      });
+
+      return {
+        videoId: settingsMap.youtube_video_id || "CyKl-0Y1ZDg",
+        channelUrl: settingsMap.youtube_channel_url || "https://youtube.com/@example",
+      };
+    },
+  });
+
+  const videoId = settings?.videoId || "CyKl-0Y1ZDg";
+  const channelUrl = settings?.channelUrl || "https://youtube.com/@example";
 
   return (
     <section className="py-10 md:py-14 bg-secondary/30">
@@ -35,15 +59,19 @@ export function YouTubeEmbed() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg bg-black">
-            <iframe
-              src={`https://www.youtube.com/embed/${latestVideoId}`}
-              title="Último programa"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-            />
-          </div>
+          {isLoading ? (
+            <Skeleton className="aspect-video rounded-xl" />
+          ) : (
+            <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg bg-black">
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title="Último programa"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex justify-center md:hidden">

@@ -34,6 +34,8 @@ import {
   LogOut,
   Home,
   Loader2,
+  Image,
+  Settings,
 } from "lucide-react";
 import grupoLogo from "@/assets/logos/grupo-jsidney.png";
 
@@ -42,8 +44,10 @@ const menuItems = [
   { title: "Notícias", url: "/admin/noticias", icon: Newspaper },
   { title: "Comunicadores", url: "/admin/comunicadores", icon: Users },
   { title: "Rádios", url: "/admin/radios", icon: Radio },
+  { title: "Banners", url: "/admin/banners", icon: Image },
   { title: "Regiões", url: "/admin/regioes", icon: MapPin },
   { title: "Usuários", url: "/admin/usuarios", icon: UserCog },
+  { title: "Configurações", url: "/admin/configuracoes", icon: Settings },
 ];
 
 function AdminSidebar() {
