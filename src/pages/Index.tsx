@@ -21,7 +21,7 @@ const Index = () => {
         <HeroSection />
         
         {/* Ad Banners - Above Latest News */}
-        <AdBanner />
+        <AdBanner position="above_news" />
         
         {/* Latest News Grid */}
         <LatestNews />
@@ -30,7 +30,7 @@ const Index = () => {
         <RegionalNews />
 
         {/* Ad Banners - Above Communicators */}
-        <AdBanner />
+        <AdBanner position="above_communicators" />
 
         {/* Communicators Preview */}
         <CommunicatorsPreview />
