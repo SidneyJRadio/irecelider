@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, Radio, ExternalLink } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Radio, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { radios } from "@/data/radios";
 import { cn } from "@/lib/utils";
 import { useRadioPlayer } from "@/contexts/RadioPlayerContext";
 import { usePictureInPicture } from "@/hooks/usePictureInPicture";
@@ -16,6 +15,8 @@ export function RadioPlayer() {
     togglePlay,
     isMuted,
     toggleMute,
+    radios,
+    isLoading,
   } = useRadioPlayer();
 
   const { isPiPSupported, isPiPActive, openPiP, pipWindow } = usePictureInPicture();
@@ -55,6 +56,18 @@ export function RadioPlayer() {
   const handleCancelExit = useCallback(() => {
     setShowExitPrompt(false);
   }, []);
+
+  if (isLoading) {
+    return (
+      <section id="player" className="relative py-6">
+        <div className="container">
+          <div className="relative rounded-2xl player-glass overflow-hidden p-8 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary-foreground" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
