@@ -1,85 +1,75 @@
 
-## Plano de Correções do Painel Administrativo
 
-Identifiquei os 3 problemas relatados e vou corrigi-los:
+## Plano: Expandir Sistema de Banners
 
----
+### O que precisa ser feito
 
-### Problema 1: Link do YouTube na Pagina Inicial
-
-**Diagnostico:**
-A pagina de Configuracoes (`SettingsAdmin.tsx`) existe e funciona corretamente - os dados estao no banco (`youtube_video_id: CyKl-0Y1ZDg`, `youtube_channel_url: https://youtube.com/@example`). O componente `YouTubeEmbed.tsx` tambem busca esses dados corretamente.
-
-**Problema identificado:**
-O menu do admin pode nao estar mostrando o link para a pagina de Configuracoes, ou o usuario nao esta encontrando onde alterar.
-
-**Solucao:**
-- Verificar se a rota `/admin/configuracoes` esta corretamente configurada no App.tsx e no menu lateral
-- Garantir que o item "Configuracoes" aparece no menu do AdminLayout
+1. **Inserir os 2 banners faltantes** (above_communicators) - prontos para receber imagens
+2. **Remover a limitacao de slots** - permitir adicionar quantos banners quiser
+3. **Atualizar o layout do frontend** - exibir todos os banners de cada posicao em carrossel ou grid flexivel
 
 ---
 
-### Problema 2: Banners Duplicados
+### Parte 1: Inserir Banners Vazios no Banco de Dados
 
-**Diagnostico:**
-Os banners no banco estao corretos - ambos tem `position: above_news` (slot 1 e slot 2). O problema e que na pagina Index.tsx, o componente `AdBanner` e usado DUAS vezes sem especificar a posicao correta:
+Adicionar 2 registros na tabela `banners` para a posicao "above_communicators":
+- Banner slot 1: titulo "Banner Comunicadores 1", sem imagem (placeholder), inativo
+- Banner slot 2: titulo "Banner Comunicadores 2", sem imagem (placeholder), inativo
 
-```tsx
-{/* Ad Banners - Above Latest News */}
-<AdBanner />  {/* Usa position="above_news" por padrao */}
-
-{/* Ad Banners - Above Communicators */}
-<AdBanner />  {/* Tambem usa position="above_news" por padrao! */}
-```
-
-Ambos estao usando a mesma posicao padrao, causando a duplicacao visual.
-
-**Solucao:**
-- Corrigir o Index.tsx para passar a prop `position` correta:
-  - Primeiro AdBanner: `position="above_news"`
-  - Segundo AdBanner: `position="above_communicators"`
+Esses banners ficarao visiveis no painel admin para voce adicionar as imagens.
 
 ---
 
-### Problema 3: Radios nao Sincronizando entre Paginas
+### Parte 2: Atualizar Formulario de Banners
 
-**Diagnostico:**
-O componente `RadioPlayer.tsx` usa dados estaticos do arquivo `src/data/radios.ts` (dados hardcoded), enquanto a pagina "Nossas Radios" (`Radios.tsx`) e o `RadiosAdmin.tsx` usam dados dinamicos do banco de dados via `useRadios()`.
+**Remover o campo "Slot"** do formulario e substituir por:
+- Campo de "Ordem de exibicao" (numero para ordenar os banners)
+- Permitir criar quantos banners quiser para cada posicao
 
-**Problema:** O player de radio na pagina inicial ignora completamente o banco de dados.
+**Atualizar validacao:**
+- Nao exigir mais que slot seja 1 ou 2
+- Usar display_order para ordenar os banners
 
-**Solucao:**
-- Modificar o `RadioPlayerContext.tsx` para buscar radios do banco de dados
-- Atualizar o `RadioPlayer.tsx` para usar radios do banco em vez do arquivo estatico
-- Manter o arquivo `src/data/radios.ts` como fallback caso o banco falhe
+---
+
+### Parte 3: Atualizar Componente AdBanner no Frontend
+
+**Mudar de grid fixo (2 colunas) para layout dinamico:**
+
+Opcao A - **Carrossel automatico** (se houver mais de 2 banners):
+- Exibe 2 banners por vez no desktop
+- Roda automaticamente entre os banners
+- Permite navegacao manual
+
+Opcao B - **Grid flexivel** (todos visiveis):
+- Exibe todos os banners ativos
+- Desktop: 2 por linha
+- Mobile: 1 por linha
+
+**Recomendacao:** Opcao A (carrossel) para nao ocupar muito espaco vertical.
 
 ---
 
 ### Arquivos a Modificar
 
-1. **`src/pages/Index.tsx`**
-   - Corrigir as props `position` dos componentes AdBanner
-
-2. **`src/contexts/RadioPlayerContext.tsx`**
-   - Adicionar query para buscar radios do banco de dados
-   - Usar radios dinamicos em vez de estaticos
-
-3. **`src/components/home/RadioPlayer.tsx`**
-   - Usar radios do contexto (que agora virao do banco)
-   - Remover import do arquivo estatico
-
-4. **`src/components/admin/AdminLayout.tsx`** (verificar)
-   - Confirmar que o item Configuracoes esta no menu
-
-5. **`src/App.tsx`** (verificar)
-   - Confirmar que a rota `/admin/configuracoes` existe
+| Arquivo | Alteracao |
+|---------|-----------|
+| Banco de dados | Inserir 2 banners para "above_communicators" |
+| `src/pages/admin/BannersAdmin.tsx` | Remover limite de slots, usar display_order |
+| `src/components/home/AdBanner.tsx` | Exibir todos banners em carrossel ou grid |
 
 ---
 
-### Resumo das Correcoes
+### Estrutura do Banco Atualizada
 
-| Problema | Causa | Solucao |
-|----------|-------|---------|
-| YouTube nao editavel | Menu/rota pode estar faltando | Verificar e corrigir navegacao |
-| Banners duplicados | Prop `position` nao passada | Passar posicoes diferentes |
-| Radios nao sincronizam | Player usa arquivo estatico | Integrar com banco de dados |
+Banners apos as alteracoes:
+
+| Titulo | Posicao | Ordem | Imagem | Ativo |
+|--------|---------|-------|--------|-------|
+| radio clube fm jacobina | above_news | 1 | ✓ | ✓ |
+| serrana | above_news | 2 | ✓ | ✓ |
+| Banner Comunicadores 1 | above_communicators | 1 | (vazio) | ✗ |
+| Banner Comunicadores 2 | above_communicators | 2 | (vazio) | ✗ |
+
+Voce podera adicionar mais banners livremente em cada posicao!
+
