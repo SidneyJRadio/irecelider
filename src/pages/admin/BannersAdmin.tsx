@@ -69,9 +69,8 @@ export default function BannersAdmin() {
     image_url: "",
     link_url: "",
     position: "above_news",
-    slot: 1,
     active: true,
-    display_order: 0,
+    display_order: 1,
   });
 
   const fetchData = async () => {
@@ -80,7 +79,7 @@ export default function BannersAdmin() {
       .from("banners")
       .select("*")
       .order("position")
-      .order("slot");
+      .order("display_order");
 
     if (!error) {
       setBanners(data || []);
@@ -92,15 +91,20 @@ export default function BannersAdmin() {
     fetchData();
   }, []);
 
+  const getNextDisplayOrder = (position: string) => {
+    const positionBanners = banners.filter(b => b.position === position);
+    if (positionBanners.length === 0) return 1;
+    return Math.max(...positionBanners.map(b => b.display_order || 0)) + 1;
+  };
+
   const resetForm = () => {
     setFormData({
       title: "",
       image_url: "",
       link_url: "",
       position: "above_news",
-      slot: 1,
       active: true,
-      display_order: 0,
+      display_order: 1,
     });
     setEditId(null);
   };
@@ -111,9 +115,8 @@ export default function BannersAdmin() {
       image_url: banner.image_url,
       link_url: banner.link_url || "",
       position: banner.position,
-      slot: banner.slot,
       active: banner.active,
-      display_order: banner.display_order,
+      display_order: banner.display_order || 1,
     });
     setEditId(banner.id);
     setDialogOpen(true);
@@ -126,6 +129,7 @@ export default function BannersAdmin() {
     const data = {
       ...formData,
       link_url: formData.link_url || null,
+      slot: formData.display_order, // Keep slot in sync with display_order for compatibility
     };
 
     let error;
@@ -137,7 +141,10 @@ export default function BannersAdmin() {
         .eq("id", editId);
       error = updateError;
     } else {
-      const { error: insertError } = await supabase.from("banners").insert(data);
+      const { error: insertError } = await supabase.from("banners").insert({
+        ...data,
+        display_order: getNextDisplayOrder(formData.position),
+      });
       error = insertError;
     }
 
@@ -281,19 +288,17 @@ export default function BannersAdmin() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Slot</Label>
-                    <Select
-                      value={formData.slot.toString()}
-                      onValueChange={(value) => setFormData((p) => ({ ...p, slot: parseInt(value) }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Slot 1 (Esquerda)</SelectItem>
-                        <SelectItem value="2">Slot 2 (Direita)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Ordem de Exibição</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={formData.display_order}
+                      onChange={(e) => setFormData((p) => ({ ...p, display_order: parseInt(e.target.value) || 1 }))}
+                      placeholder="1"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Menor número = aparece primeiro
+                    </p>
                   </div>
                 </div>
 
@@ -375,7 +380,7 @@ export default function BannersAdmin() {
                     <TableCell className="hidden md:table-cell">
                       <div>
                         <p className="text-sm">{getPositionLabel(banner.position)}</p>
-                        <p className="text-xs text-muted-foreground">Slot {banner.slot}</p>
+                        <p className="text-xs text-muted-foreground">Ordem: {banner.display_order || 1}</p>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
