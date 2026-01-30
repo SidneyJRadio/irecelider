@@ -1,10 +1,12 @@
 import { Instagram, Radio } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { communicators } from "@/data/communicators";
-import { radios } from "@/data/radios";
+import { useCommunicators } from "@/hooks/useData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Comunicadores = () => {
+  const { data: communicators, isLoading } = useCommunicators();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -25,11 +27,19 @@ const Comunicadores = () => {
         {/* Communicators Grid */}
         <section className="py-12 md:py-16">
           <div className="container">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {communicators.map((communicator, index) => {
-                const radio = radios.find((r) => r.id === communicator.radioId);
-                
-                return (
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="text-center p-6">
+                    <Skeleton className="w-32 h-32 rounded-full mx-auto mb-4" />
+                    <Skeleton className="h-6 w-32 mx-auto mb-2" />
+                    <Skeleton className="h-4 w-24 mx-auto" />
+                  </div>
+                ))}
+              </div>
+            ) : communicators && communicators.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {communicators.map((communicator, index) => (
                   <article
                     key={communicator.id}
                     className="card-news group text-center p-6"
@@ -39,13 +49,22 @@ const Comunicadores = () => {
                     <div className="relative w-32 h-32 mx-auto mb-4">
                       <div 
                         className="absolute inset-0 rounded-full opacity-20 blur-xl transition-opacity group-hover:opacity-40"
-                        style={{ backgroundColor: radio?.color || "hsl(220, 70%, 45%)" }}
+                        style={{ backgroundColor: communicator.radios?.color || "hsl(220, 70%, 45%)" }}
                       />
-                      <img
-                        src={communicator.photo}
-                        alt={communicator.name}
-                        className="relative w-full h-full object-cover rounded-full border-4 border-background shadow-lg"
-                      />
+                      {communicator.photo_url ? (
+                        <img
+                          src={communicator.photo_url}
+                          alt={communicator.name}
+                          className="relative w-full h-full object-cover rounded-full border-4 border-background shadow-lg"
+                        />
+                      ) : (
+                        <div 
+                          className="relative w-full h-full rounded-full border-4 border-background shadow-lg flex items-center justify-center text-white font-bold text-2xl"
+                          style={{ backgroundColor: communicator.radios?.color || "hsl(220, 70%, 45%)" }}
+                        >
+                          {communicator.name.charAt(0)}
+                        </div>
+                      )}
                     </div>
 
                     {/* Info */}
@@ -64,33 +83,41 @@ const Comunicadores = () => {
                     )}
 
                     {/* Radio Badge */}
-                    <div className="flex items-center justify-center gap-1.5 mt-3">
-                      <Radio
-                        className="w-4 h-4"
-                        style={{ color: radio?.color }}
-                      />
-                      <span
-                        className="text-sm font-medium"
-                        style={{ color: radio?.color }}
-                      >
-                        {communicator.radio}
-                      </span>
-                    </div>
+                    {communicator.radios && (
+                      <div className="flex items-center justify-center gap-1.5 mt-3">
+                        <Radio
+                          className="w-4 h-4"
+                          style={{ color: communicator.radios.color || undefined }}
+                        />
+                        <span
+                          className="text-sm font-medium"
+                          style={{ color: communicator.radios.color || undefined }}
+                        >
+                          {communicator.radios.name}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Instagram */}
-                    <a
-                      href={`https://instagram.com/${communicator.instagram}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-                    >
-                      <Instagram className="w-4 h-4" />
-                      @{communicator.instagram}
-                    </a>
+                    {communicator.instagram && (
+                      <a
+                        href={`https://instagram.com/${communicator.instagram}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                      >
+                        <Instagram className="w-4 h-4" />
+                        @{communicator.instagram}
+                      </a>
+                    )}
                   </article>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                Nenhum comunicador cadastrado
+              </div>
+            )}
           </div>
         </section>
 
