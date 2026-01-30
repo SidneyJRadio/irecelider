@@ -47,10 +47,64 @@ export function useRadios() {
         .from("radios")
         .select("*")
         .eq("active", true)
-        .order("name");
+        .order("display_order", { ascending: true });
       
       if (error) throw error;
       return data as Radio[];
+    },
+  });
+}
+
+export interface Region {
+  id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+}
+
+export function useRegions() {
+  return useQuery({
+    queryKey: ["regions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("regions")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      return data as Region[];
+    },
+  });
+}
+
+export function useFeaturedNewsByRegion() {
+  return useQuery({
+    queryKey: ["news", "featured-by-region"],
+    queryFn: async () => {
+      const { data: regions, error: regionsError } = await supabase
+        .from("regions")
+        .select("id, name, slug, color")
+        .order("name");
+      
+      if (regionsError) throw regionsError;
+      if (!regions) return [];
+
+      const results = await Promise.all(
+        regions.map(async (region) => {
+          const { data } = await supabase
+            .from("news")
+            .select("*, regions(name, slug, color)")
+            .eq("region_id", region.id)
+            .eq("status", "published")
+            .eq("featured", true)
+            .order("published_at", { ascending: false })
+            .limit(1);
+          
+          return { region, featuredNews: data?.[0] || null };
+        })
+      );
+      
+      return results;
     },
   });
 }

@@ -10,7 +10,10 @@ export default function Radios() {
 
   const formatWhatsApp = (number: string | null) => {
     if (!number) return null;
-    return `https://wa.me/${number.replace(/\D/g, '')}`;
+    // Remove all non-digit characters and ensure proper format
+    const cleaned = number.replace(/\D/g, '').trim();
+    if (cleaned.length < 10) return null;
+    return `https://wa.me/${cleaned}`;
   };
 
   return (

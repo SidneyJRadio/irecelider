@@ -220,6 +220,7 @@ export type Database = {
           active: boolean | null
           color: string | null
           created_at: string
+          display_order: number | null
           frequency: string
           id: string
           logo_url: string | null
@@ -235,6 +236,7 @@ export type Database = {
           active?: boolean | null
           color?: string | null
           created_at?: string
+          display_order?: number | null
           frequency: string
           id?: string
           logo_url?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           active?: boolean | null
           color?: string | null
           created_at?: string
+          display_order?: number | null
           frequency?: string
           id?: string
           logo_url?: string | null

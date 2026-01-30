@@ -75,7 +75,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
         .from("radios")
         .select("*")
         .eq("active", true)
-        .order("name");
+        .order("display_order", { ascending: true });
       
       if (error) throw error;
       return data;
