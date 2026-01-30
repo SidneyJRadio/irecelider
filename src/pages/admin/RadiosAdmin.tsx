@@ -56,6 +56,7 @@ interface RadioItem {
   logo_url: string | null;
   color: string | null;
   active: boolean;
+  display_order: number;
   regions: { name: string } | null;
 }
 
@@ -85,6 +86,7 @@ export default function RadiosAdmin() {
     logo_url: "",
     color: "hsl(220, 70%, 45%)",
     active: true,
+    display_order: 0,
   });
 
   const fetchData = async () => {
@@ -93,7 +95,7 @@ export default function RadiosAdmin() {
       supabase
         .from("radios")
         .select("*, regions(name)")
-        .order("name"),
+        .order("display_order", { ascending: true }),
       supabase.from("regions").select("id, name"),
     ]);
 
@@ -118,6 +120,7 @@ export default function RadiosAdmin() {
       logo_url: "",
       color: "hsl(220, 70%, 45%)",
       active: true,
+      display_order: radios.length + 1,
     });
     setEditId(null);
   };
@@ -134,6 +137,7 @@ export default function RadiosAdmin() {
       logo_url: radio.logo_url || "",
       color: radio.color || "hsl(220, 70%, 45%)",
       active: radio.active ?? true,
+      display_order: radio.display_order || 0,
     });
     setEditId(radio.id);
     setDialogOpen(true);
@@ -328,6 +332,20 @@ export default function RadiosAdmin() {
                   folder="radios"
                 />
                 <div className="space-y-2">
+                  <Label htmlFor="display_order">Ordem de Exibição</Label>
+                  <Input
+                    id="display_order"
+                    type="number"
+                    min="0"
+                    value={formData.display_order}
+                    onChange={(e) => setFormData((p) => ({ ...p, display_order: parseInt(e.target.value) || 0 }))}
+                    placeholder="1, 2, 3..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Menor número aparece primeiro na página inicial
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="color">Cor (HSL)</Label>
                   <Input
                     id="color"
@@ -376,6 +394,7 @@ export default function RadiosAdmin() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">Ordem</TableHead>
                   <TableHead>Rádio</TableHead>
                   <TableHead className="hidden md:table-cell">Frequência</TableHead>
                   <TableHead className="hidden md:table-cell">Região</TableHead>
@@ -386,6 +405,9 @@ export default function RadiosAdmin() {
               <TableBody>
                 {radios.map((radio) => (
                   <TableRow key={radio.id} className={!radio.active ? "opacity-60" : ""}>
+                    <TableCell className="font-mono text-center">
+                      {radio.display_order || 0}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {radio.logo_url ? (

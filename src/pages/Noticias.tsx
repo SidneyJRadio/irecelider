@@ -31,7 +31,7 @@ const Noticias = () => {
     },
   });
 
-  // Fetch news
+  // Fetch news - order by featured first, then by date
   const { data: news = [], isLoading } = useQuery({
     queryKey: ["all-news", selectedRegion],
     queryFn: async () => {
@@ -39,6 +39,7 @@ const Noticias = () => {
         .from("news")
         .select("*, regions(name, color)")
         .eq("status", "published")
+        .order("featured", { ascending: false })
         .order("published_at", { ascending: false });
 
       if (selectedRegion !== "todas") {

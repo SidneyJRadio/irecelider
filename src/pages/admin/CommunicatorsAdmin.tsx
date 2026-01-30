@@ -198,6 +198,7 @@ export default function CommunicatorsAdmin() {
         variant: "destructive",
       });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["communicators"] });
       toast({
         title: "Comunicador excluído",
         description: "O comunicador foi removido com sucesso.",

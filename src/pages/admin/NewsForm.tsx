@@ -138,6 +138,20 @@ export default function NewsForm() {
     e.preventDefault();
     setSaving(true);
 
+    // Se marcou como destaque e tem região, desmarcar outras notícias da mesma região
+    if (formData.featured && formData.region_id) {
+      const { error: unfeaturedError } = await supabase
+        .from("news")
+        .update({ featured: false })
+        .eq("region_id", formData.region_id)
+        .eq("featured", true)
+        .neq("id", id || "");
+      
+      if (unfeaturedError) {
+        console.error("Erro ao desmarcar destaques anteriores:", unfeaturedError);
+      }
+    }
+
     const newsData = {
       ...formData,
       author_id: user?.id,
@@ -169,6 +183,7 @@ export default function NewsForm() {
       queryClient.invalidateQueries({ queryKey: ["published-news"] });
       queryClient.invalidateQueries({ queryKey: ["featured-news"] });
       queryClient.invalidateQueries({ queryKey: ["all-news"] });
+      queryClient.invalidateQueries({ queryKey: ["news", "featured-by-region"] });
       
       toast({
         title: isEdit ? "Notícia atualizada" : "Notícia criada",
@@ -404,7 +419,7 @@ export default function NewsForm() {
                 <div>
                   <p className="font-medium">Notícia em Destaque</p>
                   <p className="text-sm text-muted-foreground">
-                    Marcar como destaque na página inicial
+                    Destaque da região na página inicial (apenas 1 por região)
                   </p>
                 </div>
                 <Switch
