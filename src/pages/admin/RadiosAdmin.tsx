@@ -173,6 +173,7 @@ export default function RadiosAdmin() {
       });
     } else {
       queryClient.invalidateQueries({ queryKey: ["radios"] });
+      queryClient.invalidateQueries({ queryKey: ["radios-player"] });
       toast({
         title: editId ? "Rádio atualizada" : "Rádio criada",
         description: "As alterações foram salvas com sucesso.",
