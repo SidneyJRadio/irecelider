@@ -52,6 +52,7 @@ interface Communicator {
   program: string | null;
   photo_url: string | null;
   instagram: string | null;
+  whatsapp: string | null;
   radio_id: string | null;
   active: boolean;
   radios: { name: string } | null;
@@ -78,6 +79,7 @@ export default function CommunicatorsAdmin() {
     program: "",
     photo_url: "",
     instagram: "",
+    whatsapp: "",
     radio_id: "",
     active: true,
   });
@@ -87,7 +89,7 @@ export default function CommunicatorsAdmin() {
     const [commRes, radiosRes] = await Promise.all([
       supabase
         .from("communicators")
-        .select("id, name, role, program, photo_url, instagram, radio_id, active, radios(name)")
+        .select("id, name, role, program, photo_url, instagram, whatsapp, radio_id, active, radios(name)")
         .order("display_order"),
       supabase.from("radios").select("id, name"),
     ]);
@@ -108,6 +110,7 @@ export default function CommunicatorsAdmin() {
       program: "",
       photo_url: "",
       instagram: "",
+      whatsapp: "",
       radio_id: "",
       active: true,
     });
@@ -121,6 +124,7 @@ export default function CommunicatorsAdmin() {
       program: comm.program || "",
       photo_url: comm.photo_url || "",
       instagram: comm.instagram || "",
+      whatsapp: comm.whatsapp || "",
       radio_id: comm.radio_id || "",
       active: comm.active ?? true,
     });
@@ -286,6 +290,15 @@ export default function CommunicatorsAdmin() {
                     value={formData.instagram}
                     onChange={(e) => setFormData((p) => ({ ...p, instagram: e.target.value }))}
                     placeholder="@usuario"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
+                  <Input
+                    id="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={(e) => setFormData((p) => ({ ...p, whatsapp: e.target.value }))}
+                    placeholder="(00) 00000-0000"
                   />
                 </div>
                 <ImageUpload

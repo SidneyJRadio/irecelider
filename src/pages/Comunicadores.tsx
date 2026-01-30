@@ -1,4 +1,4 @@
-import { Instagram, Radio } from "lucide-react";
+import { Instagram, Radio, MessageCircle } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useCommunicators } from "@/hooks/useData";
@@ -98,18 +98,31 @@ const Comunicadores = () => {
                       </div>
                     )}
 
-                    {/* Instagram */}
-                    {communicator.instagram && (
-                      <a
-                        href={`https://instagram.com/${communicator.instagram}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-                      >
-                        <Instagram className="w-4 h-4" />
-                        @{communicator.instagram}
-                      </a>
-                    )}
+                    {/* Social Links */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+                      {communicator.instagram && (
+                        <a
+                          href={`https://instagram.com/${communicator.instagram}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                        >
+                          <Instagram className="w-4 h-4" />
+                          @{communicator.instagram}
+                        </a>
+                      )}
+                      {communicator.whatsapp && (
+                        <a
+                          href={`https://wa.me/${communicator.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#25D366] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          WhatsApp
+                        </a>
+                      )}
+                    </div>
                   </article>
                 ))}
               </div>
