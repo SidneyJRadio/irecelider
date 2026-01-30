@@ -67,6 +67,7 @@ export type Database = {
           radio_id: string | null
           role: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           active?: boolean | null
@@ -81,6 +82,7 @@ export type Database = {
           radio_id?: string | null
           role?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           active?: boolean | null
@@ -95,6 +97,7 @@ export type Database = {
           radio_id?: string | null
           role?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: [
           {

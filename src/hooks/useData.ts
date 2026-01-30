@@ -21,6 +21,7 @@ export interface Communicator {
   program: string | null;
   photo_url: string | null;
   instagram: string | null;
+  whatsapp: string | null;
   radio_id: string | null;
   radios: { name: string; color: string | null } | null;
 }
