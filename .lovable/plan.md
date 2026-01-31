@@ -1,54 +1,44 @@
 
-# Plano: Corrigir Banners Desaparecendo no Desktop
+# Plano: Aumentar a Altura dos Banners de Publicidade
 
-## Problema Identificado
+## Situação Atual
 
-O componente `AdBanner` está renderizando o placeholder "Espaço para anúncio" em vez das imagens reais dos banners no desktop. Isso acontece devido a um problema de sincronização entre o estado `currentIndex` e a mudança no valor de `bannersPerPage` quando o hook `useIsMobile` muda de estado.
+Os banners estão usando as seguintes proporções (aspect ratio):
+- **Mobile**: `aspect-[6/1]` → banner muito fino/horizontal (ex: 600x100px)
+- **Desktop**: `aspect-[8/1]` → banner ainda mais fino (ex: 800x100px)
 
-## Causa Raiz
+Essas proporções resultam em banners com pouca altura, dificultando a visualização do conteúdo publicitário.
 
-O hook `useIsMobile` pode mudar de valor após a primeira renderização (hydration), fazendo com que:
-1. Inicialmente `isMobile` seja `undefined` → tratado como `false` (desktop)
-2. Depois de um momento, mude para o valor correto
-3. Se `currentIndex` não for resetado quando `bannersPerPage` muda, o slice pode retornar banners incorretos ou vazios
+## Alterações Propostas
 
-## Solução
+Aumentar a proporção para deixar os banners mais altos e visíveis:
 
-Adicionar um `useEffect` para resetar o `currentIndex` para 0 sempre que `bannersPerPage` mudar, garantindo que o carrossel sempre comece da primeira página quando a orientação (mobile/desktop) mudar.
+| Dispositivo | Atual | Nova Proporção | Tamanho Recomendado |
+|-------------|-------|----------------|---------------------|
+| Mobile | `6/1` (muito fino) | `4/1` | 800 x 200 px |
+| Desktop | `8/1` (muito fino) | `5/1` | 1000 x 200 px |
 
-## Alterações Técnicas
+## Detalhes Técnicos
 
 ### Arquivo: `src/components/home/AdBanner.tsx`
 
-1. **Adicionar useEffect para sincronizar currentIndex com bannersPerPage**:
-   - Quando `bannersPerPage` muda (usuário redimensiona a janela ou durante hydration), resetar `currentIndex` para 0
-   - Isso evita que o índice fique "fora do range" causando arrays vazios
+Alterar o aspect ratio em **3 locais**:
 
-```typescript
-// Após a linha 48, adicionar:
-useEffect(() => {
-  setCurrentIndex(0);
-}, [bannersPerPage]);
-```
+1. **Linha 92** - Banner com link:
+   - De: `aspect-[6/1] md:aspect-[8/1]`
+   - Para: `aspect-[4/1] md:aspect-[5/1]`
 
-2. **Adicionar verificação de segurança no getCurrentBanners**:
-   - Garantir que sempre retorne banners válidos mesmo se houver problemas de sincronização
+2. **Linha 99** - Banner sem link:
+   - De: `aspect-[6/1] md:aspect-[8/1]`
+   - Para: `aspect-[4/1] md:aspect-[5/1]`
 
-```typescript
-const getCurrentBanners = () => {
-  const startIndex = currentIndex * bannersPerPage;
-  const result = banners.slice(startIndex, startIndex + bannersPerPage);
-  // Se não houver banners nesse índice, voltar para o início
-  if (result.length === 0 && banners.length > 0) {
-    return banners.slice(0, bannersPerPage);
-  }
-  return result;
-};
-```
+3. **Linha 106** - Placeholder:
+   - De: `aspect-[6/1] md:aspect-[8/1]`
+   - Para: `aspect-[4/1] md:aspect-[5/1]`
 
-## Resultado Esperado
+## Resultado Visual
 
-- Os banners serão exibidos corretamente lado a lado no desktop (2 por vez)
-- No mobile, 1 banner por vez com carrossel
-- Mudança de tamanho de tela não causará desaparecimento dos banners
-- O carrossel funcionará corretamente em ambas as orientações
+- **Antes**: Banners muito finos com aproximadamente 50-80px de altura
+- **Depois**: Banners com aproximadamente 100-160px de altura (quase o dobro)
+
+Os banners ficarão mais proeminentes e visíveis na página, melhorando a experiência do anunciante e a visualização do conteúdo publicitário.
