@@ -106,11 +106,11 @@ export function Footer() {
           </div>
 
           {/* Mascot */}
-          <div className="hidden lg:flex items-center justify-center -my-16">
+          <div className="hidden lg:flex items-center justify-center -my-24">
             <img 
               src={mascoteFooter}
               alt="Mascote Líder - 1º Lugar em Audiência"
-              className="h-[22rem] w-auto object-contain drop-shadow-2xl"
+              className="h-[28rem] w-auto object-contain drop-shadow-2xl"
             />
           </div>
         </div>
