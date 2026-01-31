@@ -31,7 +31,7 @@ export function RadioPlayer() {
   return (
     <section id="player" className="relative py-6">
       <div className="container">
-        <div className="relative rounded-2xl player-glass overflow-hidden">
+        <div className="relative rounded-2xl player-glass overflow-visible">
           {/* Background waves animation */}
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full" viewBox="0 0 1200 100" preserveAspectRatio="none">
