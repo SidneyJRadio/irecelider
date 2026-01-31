@@ -35,7 +35,7 @@ export function SingleBanner({ className, position }: SingleBannerProps) {
 
   const renderPlaceholder = () => (
     <div className="relative bg-gradient-to-br from-muted to-muted/50 rounded-xl border border-dashed border-border overflow-hidden">
-      <div className="aspect-[3/1] md:aspect-[4/1] flex items-center justify-center">
+      <div className="aspect-[6/1] md:aspect-[8/1] flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Publicidade</p>
           <p className="text-sm font-medium text-muted-foreground/70">Espaço para anúncio</p>
@@ -49,7 +49,7 @@ export function SingleBanner({ className, position }: SingleBannerProps) {
       <section className={cn("py-4", className)}>
         <div className="container">
           <div className="relative bg-gradient-to-br from-muted to-muted/50 rounded-xl border border-dashed border-border overflow-hidden animate-pulse">
-            <div className="aspect-[3/1] md:aspect-[4/1]" />
+            <div className="aspect-[6/1] md:aspect-[8/1]" />
           </div>
         </div>
       </section>
@@ -87,7 +87,7 @@ export function SingleBanner({ className, position }: SingleBannerProps) {
             rel="noopener noreferrer"
             className="relative bg-muted rounded-xl overflow-hidden group hover:ring-2 hover:ring-primary/30 transition-all block"
           >
-            <div className="aspect-[3/1] md:aspect-[4/1]">{content}</div>
+            <div className="aspect-[6/1] md:aspect-[8/1]">{content}</div>
           </a>
         </div>
       </section>
@@ -98,7 +98,7 @@ export function SingleBanner({ className, position }: SingleBannerProps) {
     <section className={cn("py-4", className)}>
       <div className="container">
         <div className="relative bg-muted rounded-xl overflow-hidden">
-          <div className="aspect-[3/1] md:aspect-[4/1]">{content}</div>
+          <div className="aspect-[6/1] md:aspect-[8/1]">{content}</div>
         </div>
       </div>
     </section>
