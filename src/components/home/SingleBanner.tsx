@@ -33,6 +33,17 @@ export function SingleBanner({ className, position }: SingleBannerProps) {
     },
   });
 
+  const renderPlaceholder = () => (
+    <div className="relative bg-gradient-to-br from-muted to-muted/50 rounded-xl border border-dashed border-border overflow-hidden">
+      <div className="aspect-[3/1] md:aspect-[4/1] flex items-center justify-center">
+        <div className="text-center p-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Publicidade</p>
+          <p className="text-sm font-medium text-muted-foreground/70">Espaço para anúncio</p>
+        </div>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <section className={cn("py-4", className)}>
@@ -47,8 +58,15 @@ export function SingleBanner({ className, position }: SingleBannerProps) {
 
   const banner = banners?.[0];
 
+  // Show placeholder if no banner
   if (!banner) {
-    return null;
+    return (
+      <section className={cn("py-4", className)}>
+        <div className="container">
+          {renderPlaceholder()}
+        </div>
+      </section>
+    );
   }
 
   const content = (
