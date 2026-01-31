@@ -36,6 +36,7 @@ import {
   Loader2,
   Image,
   Settings,
+  Footprints,
 } from "lucide-react";
 import grupoLogo from "@/assets/logos/grupo-jsidney.png";
 
@@ -45,6 +46,7 @@ const menuItems = [
   { title: "Comunicadores", url: "/admin/comunicadores", icon: Users },
   { title: "Rádios", url: "/admin/radios", icon: Radio },
   { title: "Banners", url: "/admin/banners", icon: Image },
+  { title: "Footer", url: "/admin/footer", icon: Footprints },
   { title: "Regiões", url: "/admin/regioes", icon: MapPin },
   { title: "Usuários", url: "/admin/usuarios", icon: UserCog },
   { title: "Configurações", url: "/admin/configuracoes", icon: Settings },

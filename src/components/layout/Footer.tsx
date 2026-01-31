@@ -1,10 +1,64 @@
 import { Link } from "react-router-dom";
-import { Instagram, Youtube, Facebook } from "lucide-react";
-import { radios } from "@/data/radios";
+import { Instagram, Youtube, Facebook, Link as LinkIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import grupoLogo from "@/assets/logos/grupo-jsidney.png";
 import mascoteFooter from "@/assets/mascote-footer.png";
 
+interface FooterLink {
+  id: string;
+  type: string;
+  label: string;
+  url: string;
+  icon: string | null;
+  display_order: number;
+  active: boolean;
+}
+
+const getIconComponent = (iconName: string | null) => {
+  switch (iconName) {
+    case "instagram":
+      return <Instagram className="w-5 h-5" />;
+    case "youtube":
+      return <Youtube className="w-5 h-5" />;
+    case "facebook":
+      return <Facebook className="w-5 h-5" />;
+    default:
+      return <LinkIcon className="w-5 h-5" />;
+  }
+};
+
 export function Footer() {
+  const { data: radios = [] } = useQuery({
+    queryKey: ["radios-footer"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("radios")
+        .select("id, name, frequency")
+        .eq("active", true)
+        .order("display_order", { ascending: true });
+      return data || [];
+    },
+  });
+
+  const { data: footerLinks = [] } = useQuery({
+    queryKey: ["footer-links"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("footer_links")
+        .select("*")
+        .eq("active", true)
+        .order("display_order", { ascending: true });
+      return (data || []) as FooterLink[];
+    },
+  });
+
+  const socialLinks = footerLinks.filter((link) => link.type === "social");
+  const navigationLinks = footerLinks.filter((link) => link.type === "navigation");
+  const regionLinks = footerLinks.filter((link) => link.type === "region");
+
+  const isExternalLink = (url: string) => url.startsWith("http");
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container py-12">
@@ -22,27 +76,18 @@ export function Footer() {
               O portal oficial de notícias do grupo de rádios. Informação de qualidade para toda a região.
             </p>
             <div className="flex items-center gap-3 mt-4">
-              <a
-                href="#"
-                className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
-                aria-label="YouTube"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
+              {socialLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target={isExternalLink(link.url) ? "_blank" : undefined}
+                  rel={isExternalLink(link.url) ? "noopener noreferrer" : undefined}
+                  className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
+                  aria-label={link.label}
+                >
+                  {getIconComponent(link.icon)}
+                </a>
+              ))}
             </div>
           </div>
 
@@ -52,18 +97,27 @@ export function Footer() {
               Navegação
             </h4>
             <nav className="flex flex-col gap-2">
-              <Link to="/" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Início
-              </Link>
-              <Link to="/noticias" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Notícias
-              </Link>
-              <Link to="/comunicadores" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Comunicadores
-              </Link>
-              <Link to="/contato" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Contato
-              </Link>
+              {navigationLinks.map((link) =>
+                isExternalLink(link.url) ? (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.id}
+                    to={link.url}
+                    className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
             </nav>
           </div>
 
@@ -90,18 +144,27 @@ export function Footer() {
               Regiões
             </h4>
             <nav className="flex flex-col gap-2">
-              <Link to="/noticias/irece" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Irecê
-              </Link>
-              <Link to="/noticias/chapada" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Chapada Diamantina
-              </Link>
-              <Link to="/noticias/regional" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Regional
-              </Link>
-              <Link to="/noticias/bahia" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Bahia
-              </Link>
+              {regionLinks.map((link) =>
+                isExternalLink(link.url) ? (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.id}
+                    to={link.url}
+                    className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
             </nav>
           </div>
 

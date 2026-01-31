@@ -23,6 +23,7 @@ import RadiosAdmin from "./pages/admin/RadiosAdmin";
 import RegionsAdmin from "./pages/admin/RegionsAdmin";
 import UsersAdmin from "./pages/admin/UsersAdmin";
 import BannersAdmin from "./pages/admin/BannersAdmin";
+import FooterAdmin from "./pages/admin/FooterAdmin";
 import SettingsAdmin from "./pages/admin/SettingsAdmin";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/admin/comunicadores" element={<CommunicatorsAdmin />} />
               <Route path="/admin/radios" element={<RadiosAdmin />} />
               <Route path="/admin/banners" element={<BannersAdmin />} />
+              <Route path="/admin/footer" element={<FooterAdmin />} />
               <Route path="/admin/regioes" element={<RegionsAdmin />} />
               <Route path="/admin/usuarios" element={<UsersAdmin />} />
               <Route path="/admin/configuracoes" element={<SettingsAdmin />} />
