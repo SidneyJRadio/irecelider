@@ -4,9 +4,57 @@ import { useRadios } from "@/hooks/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Radio, MessageCircle, Phone, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRadioPlayer } from "@/contexts/RadioPlayerContext";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Radios() {
   const { data: radios, isLoading } = useRadios();
+  const { setCurrentRadio, play } = useRadioPlayer();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handlePlayRadio = (radio: {
+    id: string;
+    name: string;
+    frequency: string;
+    logo_url: string | null;
+    stream_url: string | null;
+    tagline: string | null;
+    color: string | null;
+  }) => {
+    // Convert database format to context format
+    const contextRadio = {
+      id: radio.id,
+      name: radio.name,
+      frequency: radio.frequency,
+      logo: radio.logo_url || "/placeholder.svg",
+      streamUrl: radio.stream_url || "",
+      tagline: radio.tagline || "",
+      color: radio.color || "hsl(220, 70%, 45%)",
+    };
+
+    setCurrentRadio(contextRadio);
+    play();
+
+    toast({
+      title: "🎵 Reproduzindo",
+      description: `${radio.name} - ${radio.frequency}`,
+    });
+
+    // Navigate to home and scroll to player
+    navigate("/#player");
+    
+    // Scroll to top after navigation
+    setTimeout(() => {
+      const playerElement = document.getElementById("player");
+      if (playerElement) {
+        playerElement.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 100);
+  };
 
   const formatWhatsApp = (number: string | null) => {
     if (!number) return null;
@@ -138,10 +186,11 @@ export default function Radios() {
                       {/* Listen Button */}
                       {radio.stream_url && (
                         <Button 
-                          className="w-full gap-2"
+                          className="w-full gap-2 hover:opacity-90 transition-opacity"
                           style={{ 
                             backgroundColor: radio.color || undefined,
                           }}
+                          onClick={() => handlePlayRadio(radio)}
                         >
                           <Headphones className="w-4 h-4" />
                           Ouvir ao vivo
