@@ -68,7 +68,7 @@ export default function BannersAdmin() {
     title: "",
     image_url: "",
     link_url: "",
-    position: "above_news",
+    position: "above_communicators", // Default to above communicators
     active: true,
     display_order: 1,
   });
@@ -102,9 +102,9 @@ export default function BannersAdmin() {
       title: "",
       image_url: "",
       link_url: "",
-      position: "above_news",
+      position: "above_communicators", // Default to above communicators
       active: true,
-      display_order: 1,
+      display_order: getNextDisplayOrder("above_communicators"),
     });
     setEditId(null);
   };
