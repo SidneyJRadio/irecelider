@@ -98,11 +98,11 @@ export function RadioPlayer() {
               </div>
 
               {/* Mascot Image - Centered between radio info and controls */}
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center relative">
                 <img 
                   src={mascoteLider}
                   alt="Mascote Líder - 1º Lugar em Audiência"
-                  className="h-16 md:h-24 w-auto object-contain drop-shadow-lg"
+                  className="h-24 md:h-36 w-auto object-contain drop-shadow-lg -my-4 md:-my-8"
                 />
               </div>
 
