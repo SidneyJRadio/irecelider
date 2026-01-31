@@ -39,9 +39,9 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
   });
 
   const totalBanners = banners?.length || 0;
-  const bannersPerPage = 2;
-  const totalPages = Math.ceil(totalBanners / bannersPerPage);
-  const needsCarousel = totalBanners > bannersPerPage;
+  const bannersPerPage = 1; // Show 1 banner at a time (stacked layout)
+  const totalPages = totalBanners;
+  const needsCarousel = totalBanners > 1;
 
   const nextSlide = useCallback(() => {
     if (totalPages > 1) {
@@ -84,16 +84,16 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
           href={banner.link_url.startsWith("http") ? banner.link_url : `https://${banner.link_url}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="relative bg-muted rounded-xl overflow-hidden group hover:ring-2 hover:ring-primary/30 transition-all"
+          className="relative bg-muted rounded-xl overflow-hidden group hover:ring-2 hover:ring-primary/30 transition-all w-full"
         >
-          <div className="aspect-[4/1] md:aspect-[5/1]">{content}</div>
+          <div className="aspect-[6/1] md:aspect-[8/1]">{content}</div>
         </a>
       );
     }
 
     return (
-      <div key={banner.id} className="relative bg-muted rounded-xl overflow-hidden">
-        <div className="aspect-[4/1] md:aspect-[5/1]">{content}</div>
+      <div key={banner.id} className="relative bg-muted rounded-xl overflow-hidden w-full">
+        <div className="aspect-[6/1] md:aspect-[8/1]">{content}</div>
       </div>
     );
   };
@@ -101,12 +101,12 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
   const renderPlaceholder = (index: number) => (
     <div
       key={`placeholder-${index}`}
-      className="relative bg-gradient-to-br from-muted to-muted/50 rounded-xl border border-dashed border-border overflow-hidden group hover:border-primary/30 transition-colors"
+      className="relative bg-gradient-to-br from-muted to-muted/50 rounded-xl border border-dashed border-border overflow-hidden group hover:border-primary/30 transition-colors w-full"
     >
-      <div className="aspect-[4/1] md:aspect-[5/1] flex items-center justify-center">
+      <div className="aspect-[6/1] md:aspect-[8/1] flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Publicidade</p>
-          <p className="text-sm font-medium text-muted-foreground/70">728 x 90</p>
+          <p className="text-sm font-medium text-muted-foreground/70">Espaço para anúncio</p>
         </div>
       </div>
     </div>
@@ -117,9 +117,8 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     return (
       <section className={cn("py-4", className)}>
         <div className="container">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4">
             {renderPlaceholder(1)}
-            {renderPlaceholder(2)}
           </div>
         </div>
       </section>
@@ -131,9 +130,8 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     return null; // Don't show anything if no active banners
   }
 
-  // Get banners for current page
-  const startIndex = currentIndex * bannersPerPage;
-  const visibleBanners = banners.slice(startIndex, startIndex + bannersPerPage);
+  // Get current banner
+  const visibleBanner = banners[currentIndex];
 
   return (
     <section
@@ -155,11 +153,9 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
             </Button>
           )}
 
-          {/* Banners Grid */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {visibleBanners.map(renderBanner)}
-            {/* Fill empty slots with placeholders if less than 2 banners on current page */}
-            {visibleBanners.length === 1 && renderPlaceholder(1)}
+          {/* Banner - Full Width Stacked */}
+          <div className="flex flex-col gap-4">
+            {visibleBanner && renderBanner(visibleBanner)}
           </div>
 
           {/* Carousel Navigation - Next */}
