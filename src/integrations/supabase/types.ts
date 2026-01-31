@@ -109,6 +109,42 @@ export type Database = {
           },
         ]
       }
+      footer_links: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          display_order: number | null
+          icon: string | null
+          id: string
+          label: string
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          label: string
+          type: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          label?: string
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       news: {
         Row: {
           author_id: string | null
