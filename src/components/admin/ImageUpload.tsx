@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Loader2, Image as ImageIcon, AlertCircle } from "lucide-react";
 
 interface ImageUploadProps {
   value: string;
@@ -21,8 +21,24 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,6 +64,16 @@ export function ImageUpload({
       return;
     }
 
+    // Check authentication before upload
+    if (!isAuthenticated) {
+      toast({
+        title: "Autenticação necessária",
+        description: "Você precisa estar logado para fazer upload de imagens.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -61,7 +87,19 @@ export function ImageUpload({
           upsert: false,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        // Provide more specific error messages
+        if (uploadError.message.includes("Payload too large")) {
+          throw new Error("O arquivo é muito grande. O tamanho máximo é 5MB.");
+        }
+        if (uploadError.message.includes("not allowed") || uploadError.message.includes("403")) {
+          throw new Error("Você não tem permissão para fazer upload. Verifique se está logado como administrador.");
+        }
+        if (uploadError.message.includes("bucket") || uploadError.message.includes("not found")) {
+          throw new Error("Erro de configuração do armazenamento. Contate o suporte.");
+        }
+        throw uploadError;
+      }
 
       const { data: urlData } = supabase.storage
         .from("media")
@@ -74,9 +112,10 @@ export function ImageUpload({
         description: "A imagem foi enviada com sucesso.",
       });
     } catch (error: any) {
+      console.error("Upload error:", error);
       toast({
         title: "Erro no upload",
-        description: error.message || "Não foi possível enviar a imagem.",
+        description: error.message || "Não foi possível enviar a imagem. Verifique sua conexão e tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -94,6 +133,14 @@ export function ImageUpload({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
+
+      {/* Authentication Warning */}
+      {isAuthenticated === false && (
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg mb-2">
+          <AlertCircle className="w-4 h-4 text-destructive" />
+          <p className="text-sm text-destructive">Você precisa estar logado para fazer upload de imagens.</p>
+        </div>
+      )}
 
       {value ? (
         <div className="relative group">

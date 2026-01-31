@@ -1,11 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, Radio, ExternalLink, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Play, Pause, Volume2, VolumeX, Radio, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRadioPlayer } from "@/contexts/RadioPlayerContext";
-import { usePictureInPicture } from "@/hooks/usePictureInPicture";
-import { PiPPlayer } from "@/components/radio/PiPPlayer";
-import { ExitPrompt } from "@/components/radio/ExitPrompt";
+import { MiniPlayer } from "@/components/radio/MiniPlayer";
 
 export function RadioPlayer() {
   const {
@@ -19,59 +17,48 @@ export function RadioPlayer() {
     isLoading,
   } = useRadioPlayer();
 
-  const { isPiPSupported, isPiPActive, openPiP, pipWindow } = usePictureInPicture();
-  const [showExitPrompt, setShowExitPrompt] = useState(false);
+  const [showMiniPlayer, setShowMiniPlayer] = useState(false);
+  const playerRef = useRef<HTMLElement>(null);
 
-  // Handle beforeunload event
+  // Handle scroll to show/hide mini player
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isPlaying && isPiPSupported) {
-        e.preventDefault();
-        e.returnValue = "";
-        setShowExitPrompt(true);
-      }
+    const handleScroll = () => {
+      if (!playerRef.current) return;
+
+      const playerRect = playerRef.current.getBoundingClientRect();
+      const isPlayerOutOfView = playerRect.bottom < 0;
+      
+      setShowMiniPlayer(isPlayerOutOfView);
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isPlaying, isPiPSupported]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check initial state
 
-  // Handle page visibility change
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && isPlaying && isPiPSupported && !isPiPActive) {
-        // Optionally show prompt or auto-open PiP
-      }
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [isPlaying, isPiPSupported, isPiPActive]);
-
-  const handleOpenPiP = useCallback(async () => {
-    setShowExitPrompt(false);
-    await openPiP();
-  }, [openPiP]);
-
-  const handleCancelExit = useCallback(() => {
-    setShowExitPrompt(false);
+  const scrollToPlayer = useCallback(() => {
+    playerRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   if (isLoading) {
     return (
-      <section id="player" className="relative py-6">
-        <div className="container">
-          <div className="relative rounded-2xl player-glass overflow-hidden p-8 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary-foreground" />
+      <>
+        <section id="player" ref={playerRef} className="relative py-6">
+          <div className="container">
+            <div className="relative rounded-2xl player-glass overflow-hidden p-8 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary-foreground" />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+        <MiniPlayer isVisible={false} onScrollToPlayer={scrollToPlayer} />
+      </>
     );
   }
 
   return (
     <>
-      <section id="player" className="relative py-6">
+      <section id="player" ref={playerRef} className="relative py-6">
         <div className="container">
           <div className="relative rounded-2xl player-glass overflow-hidden">
             {/* Background waves animation */}
@@ -141,19 +128,6 @@ export function RadioPlayer() {
 
                 {/* Controls */}
                 <div className="flex items-center gap-3">
-                  {/* PiP Button */}
-                  {isPiPSupported && isPlaying && !isPiPActive && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleOpenPiP}
-                      className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
-                      title="Abrir player flutuante"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                    </Button>
-                  )}
-
                   <Button
                     variant="ghost"
                     size="icon"
@@ -187,17 +161,8 @@ export function RadioPlayer() {
         </div>
       </section>
 
-      {/* PiP Player */}
-      {isPiPActive && pipWindow && <PiPPlayer pipWindow={pipWindow} />}
-
-      {/* Exit Prompt */}
-      <ExitPrompt
-        open={showExitPrompt}
-        onOpenChange={setShowExitPrompt}
-        onConfirmPiP={handleOpenPiP}
-        onCancel={handleCancelExit}
-        radioName={currentRadio.name}
-      />
+      {/* Mini Player - Shows when main player is out of view */}
+      <MiniPlayer isVisible={showMiniPlayer} onScrollToPlayer={scrollToPlayer} />
     </>
   );
 }
