@@ -7,6 +7,7 @@ import { RegionalNews } from "@/components/home/RegionalNews";
 import { YouTubeEmbed } from "@/components/home/YouTubeEmbed";
 import { CommunicatorsPreview } from "@/components/home/CommunicatorsPreview";
 import { AdBanner } from "@/components/home/AdBanner";
+import { SingleBanner } from "@/components/home/SingleBanner";
 
 const Index = () => {
   return (
@@ -25,6 +26,9 @@ const Index = () => {
         
         {/* Latest News Grid */}
         <LatestNews />
+        
+        {/* Single Banner - Above Regional News */}
+        <SingleBanner position="above_regional" />
         
         {/* Regional News */}
         <RegionalNews />

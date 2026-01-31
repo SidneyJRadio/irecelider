@@ -208,6 +208,8 @@ export default function BannersAdmin() {
     switch (position) {
       case "above_news":
         return "Acima das Notícias";
+      case "above_regional":
+        return "Acima das Notícias por Região";
       case "above_communicators":
         return "Acima dos Comunicadores";
       default:
@@ -282,6 +284,7 @@ export default function BannersAdmin() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="above_news">Acima das Notícias</SelectItem>
+                        <SelectItem value="above_regional">Acima das Notícias por Região (único)</SelectItem>
                         <SelectItem value="above_communicators">Acima dos Comunicadores</SelectItem>
                       </SelectContent>
                     </Select>
