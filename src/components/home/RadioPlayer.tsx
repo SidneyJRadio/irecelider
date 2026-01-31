@@ -2,6 +2,7 @@ import { Play, Pause, Volume2, VolumeX, Radio, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRadioPlayer } from "@/contexts/RadioPlayerContext";
+import mascoteLider from "@/assets/mascote-lider.png";
 
 export function RadioPlayer() {
   const {
@@ -94,6 +95,15 @@ export function RadioPlayer() {
                     {currentRadio.tagline}
                   </p>
                 </div>
+              </div>
+
+              {/* Mascot Image */}
+              <div className="hidden md:block">
+                <img 
+                  src={mascoteLider}
+                  alt="Mascote Líder - 1º Lugar em Audiência"
+                  className="h-20 w-auto object-contain drop-shadow-lg"
+                />
               </div>
 
               {/* Controls */}
