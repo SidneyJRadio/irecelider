@@ -1,139 +1,54 @@
 
-## Plano: Correcoes de Upload de Imagens, Player Flutuante e Troca de Radio
+# Plano: Corrigir Banners Desaparecendo no Desktop
 
-### Resumo dos Problemas Identificados
+## Problema Identificado
 
-Analisei o codigo e os logs para identificar as causas de cada problema:
+O componente `AdBanner` está renderizando o placeholder "Espaço para anúncio" em vez das imagens reais dos banners no desktop. Isso acontece devido a um problema de sincronização entre o estado `currentIndex` e a mudança no valor de `bannersPerPage` quando o hook `useIsMobile` muda de estado.
 
----
+## Causa Raiz
 
-### 1. Upload de Imagens dos Comunicadores
+O hook `useIsMobile` pode mudar de valor após a primeira renderização (hydration), fazendo com que:
+1. Inicialmente `isMobile` seja `undefined` → tratado como `false` (desktop)
+2. Depois de um momento, mude para o valor correto
+3. Se `currentIndex` não for resetado quando `bannersPerPage` muda, o slice pode retornar banners incorretos ou vazios
 
-**Diagnostico:**
-O componente `ImageUpload` esta correto e o bucket "media" existe com as politicas de storage configuradas. Verifiquei que uploads de banners estao funcionando (as URLs aparecem nos requests de rede).
+## Solução
 
-**Possiveis causas:**
-- Voce pode nao estar logado como admin quando tenta fazer upload
-- A politica de storage exige autenticacao (`TO authenticated`)
-- O componente pode nao estar passando o token de autenticacao corretamente
+Adicionar um `useEffect` para resetar o `currentIndex` para 0 sempre que `bannersPerPage` mudar, garantindo que o carrossel sempre comece da primeira página quando a orientação (mobile/desktop) mudar.
 
-**Solucao:**
-Vou adicionar melhor tratamento de erros no componente `ImageUpload` para mostrar mensagens mais claras sobre o que esta falhando, e verificar se o usuario esta autenticado antes de tentar upload.
+## Alterações Técnicas
 
-**Arquivo afetado:**
-- `src/components/admin/ImageUpload.tsx`
+### Arquivo: `src/components/home/AdBanner.tsx`
 
----
-
-### 2. Popup Flutuante da Radio (Picture-in-Picture)
-
-**Diagnostico:**
-O erro no console e claro:
-```
-NotAllowedError: Opening a PiP window is only allowed from a top-level browsing context
-```
-
-**Explicacao:**
-A API Document Picture-in-Picture so funciona em contextos "top-level" (janela principal do navegador). O preview do Lovable roda dentro de um iframe, o que impede o PiP de funcionar.
-
-**Solucao:**
-Como o PiP nao funciona em iframes, vou implementar uma alternativa visual: um **mini-player fixo** que aparece quando voce rola a pagina para baixo. Esse mini-player ficara no canto inferior da tela com:
-- Logo da radio atual
-- Botao de play/pause
-- Botao de mudo/volume
-- Botao para voltar ao player principal
-
-Isso funcionara tanto no preview quanto no site publicado.
-
-**Arquivos afetados:**
-- `src/components/radio/MiniPlayer.tsx` (novo arquivo)
-- `src/components/home/RadioPlayer.tsx` - Detectar scroll e mostrar mini-player
-- `src/pages/Index.tsx` - Integrar o mini-player
-
----
-
-### 3. Troca Automatica de Radio na Pagina "Nossas Radios"
-
-**Diagnostico:**
-O botao "Ouvir ao vivo" na pagina `/radios` nao esta conectado ao contexto do player. Ele apenas mostra o texto, mas nao executa nenhuma acao.
-
-**Solucao:**
-Conectar o botao ao contexto `RadioPlayerContext` para:
-1. Trocar para a radio selecionada (`setCurrentRadio`)
-2. Iniciar a reproducao automaticamente (`play`)
-3. Mostrar feedback visual (toast de confirmacao)
-4. Rolar a pagina para o topo ou mostrar o mini-player
-
-**Arquivo afetado:**
-- `src/pages/Radios.tsx`
-
----
-
-### Detalhes Tecnicos
-
-#### Mini-Player Fixo (Substituindo PiP)
-
-O mini-player sera um componente fixo no canto inferior direito que aparece quando:
-- O player principal sai da area visivel (scroll)
-- Uma radio esta tocando
-
-```text
-+----------------------------------+
-|                                  |
-|   [Logo] Radio Name  [II] [🔊]  |
-|                                  |
-+----------------------------------+
-```
-
-Funcionalidades:
-- Play/Pause
-- Mute/Unmute  
-- Clicar no nome volta ao player principal
-- Animacao suave de entrada/saida
-
-#### Conexao do Botao "Ouvir ao Vivo"
+1. **Adicionar useEffect para sincronizar currentIndex com bannersPerPage**:
+   - Quando `bannersPerPage` muda (usuário redimensiona a janela ou durante hydration), resetar `currentIndex` para 0
+   - Isso evita que o índice fique "fora do range" causando arrays vazios
 
 ```typescript
-const { setCurrentRadio, play } = useRadioPlayer();
+// Após a linha 48, adicionar:
+useEffect(() => {
+  setCurrentIndex(0);
+}, [bannersPerPage]);
+```
 
-const handlePlayRadio = (radio: Radio) => {
-  // Converter formato do banco para formato do contexto
-  const contextRadio = {
-    id: radio.id,
-    name: radio.name,
-    frequency: radio.frequency,
-    logo: radio.logo_url || "/placeholder.svg",
-    streamUrl: radio.stream_url || "",
-    tagline: radio.tagline || "",
-    color: radio.color || "hsl(220, 70%, 45%)",
-  };
-  
-  setCurrentRadio(contextRadio);
-  play();
-  
-  toast({
-    title: "Reproduzindo",
-    description: `${radio.name} - ${radio.frequency}`,
-  });
+2. **Adicionar verificação de segurança no getCurrentBanners**:
+   - Garantir que sempre retorne banners válidos mesmo se houver problemas de sincronização
+
+```typescript
+const getCurrentBanners = () => {
+  const startIndex = currentIndex * bannersPerPage;
+  const result = banners.slice(startIndex, startIndex + bannersPerPage);
+  // Se não houver banners nesse índice, voltar para o início
+  if (result.length === 0 && banners.length > 0) {
+    return banners.slice(0, bannersPerPage);
+  }
+  return result;
 };
 ```
 
----
+## Resultado Esperado
 
-### Resumo das Alteracoes
-
-| Problema | Solucao | Arquivos |
-|----------|---------|----------|
-| Upload de imagens | Melhorar tratamento de erros e verificar autenticacao | `ImageUpload.tsx` |
-| PiP nao funciona | Mini-player fixo como alternativa | `MiniPlayer.tsx`, `RadioPlayer.tsx`, `Index.tsx` |
-| Troca de radio | Conectar botao ao contexto do player | `Radios.tsx` |
-
----
-
-### Comportamento Esperado Apos as Alteracoes
-
-1. **Upload de Imagens**: Se houver erro, uma mensagem clara aparecera explicando o problema (ex: "Voce precisa estar logado para fazer upload")
-
-2. **Mini-Player**: Quando voce rolar a pagina e o player principal sumir, um mini-player aparecera no canto inferior com controles de reproducao
-
-3. **Pagina Radios**: Ao clicar em "Ouvir ao vivo", a radio sera trocada automaticamente, comecara a tocar, e voce vera uma confirmacao na tela
+- Os banners serão exibidos corretamente lado a lado no desktop (2 por vez)
+- No mobile, 1 banner por vez com carrossel
+- Mudança de tamanho de tela não causará desaparecimento dos banners
+- O carrossel funcionará corretamente em ambas as orientações
