@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AdBannerProps {
   className?: string;
@@ -22,6 +23,7 @@ interface Banner {
 export function AdBanner({ className, position = "above_news" }: AdBannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const isMobile = useIsMobile();
 
   const { data: banners, isLoading } = useQuery({
     queryKey: ["banners", position],
@@ -38,9 +40,12 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     },
   });
 
-  // Calculate total pages (2 banners per page)
-  const totalPages = banners ? Math.ceil(banners.length / 2) : 0;
-  const needsCarousel = banners && banners.length > 2;
+  // Mobile: 1 per page, Desktop: 2 per page
+  const bannersPerPage = isMobile ? 1 : 2;
+  // Calculate total pages
+  const totalPages = banners ? Math.ceil(banners.length / bannersPerPage) : 0;
+  // Mobile: always carousel if >1, Desktop: carousel if >2
+  const needsCarousel = banners ? (isMobile ? banners.length > 1 : banners.length > 2) : false;
 
   const nextSlide = useCallback(() => {
     if (!needsCarousel) return;
@@ -52,13 +57,14 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
   }, [totalPages, needsCarousel]);
 
-  // Auto-advance carousel every 5 seconds
+  // Auto-advance carousel: 6s on mobile, 5s on desktop
   useEffect(() => {
     if (!needsCarousel || isPaused) return;
 
-    const timer = setInterval(nextSlide, 5000);
+    const interval = isMobile ? 6000 : 5000;
+    const timer = setInterval(nextSlide, interval);
     return () => clearInterval(timer);
-  }, [needsCarousel, isPaused, nextSlide]);
+  }, [needsCarousel, isPaused, nextSlide, isMobile]);
 
   const renderBanner = (banner: Banner) => {
     const content = (
@@ -120,10 +126,10 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     return null;
   }
 
-  // Get current page banners (2 per page)
+  // Get current page banners
   const getCurrentBanners = () => {
-    const startIndex = currentIndex * 2;
-    return banners.slice(startIndex, startIndex + 2);
+    const startIndex = currentIndex * bannersPerPage;
+    return banners.slice(startIndex, startIndex + bannersPerPage);
   };
 
   const currentBanners = getCurrentBanners();
@@ -136,11 +142,11 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     >
       <div className="container">
         <div className="relative">
-          {/* Banners Grid - 2 side by side */}
+          {/* Banners Grid */}
           <div className="flex gap-4">
             {currentBanners.map(renderBanner)}
-            {/* If only 1 banner on current page, show placeholder */}
-            {currentBanners.length === 1 && renderPlaceholder()}
+            {/* If less banners than bannersPerPage on current page, show placeholder (desktop only) */}
+            {!isMobile && currentBanners.length < bannersPerPage && renderPlaceholder()}
           </div>
 
           {/* Navigation arrows - only show if carousel is needed */}
