@@ -2,7 +2,7 @@ import { Play, Pause, Volume2, VolumeX, Radio, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRadioPlayer } from "@/contexts/RadioPlayerContext";
-import mascoteLider from "@/assets/mascote-lider.png";
+import mascoteLider from "@/assets/mascote-lider-novo.png";
 
 export function RadioPlayer() {
   const {
