@@ -47,6 +47,11 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
   // Mobile: always carousel if >1, Desktop: carousel if >2
   const needsCarousel = banners ? (isMobile ? banners.length > 1 : banners.length > 2) : false;
 
+  // Reset currentIndex when bannersPerPage changes (e.g., on resize or hydration)
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [bannersPerPage]);
+
   const nextSlide = useCallback(() => {
     if (!needsCarousel) return;
     setCurrentIndex((prev) => (prev + 1) % totalPages);
@@ -126,10 +131,15 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
     return null;
   }
 
-  // Get current page banners
+  // Get current page banners with safety fallback
   const getCurrentBanners = () => {
     const startIndex = currentIndex * bannersPerPage;
-    return banners.slice(startIndex, startIndex + bannersPerPage);
+    const result = banners.slice(startIndex, startIndex + bannersPerPage);
+    // If no banners at this index, fallback to first page
+    if (result.length === 0 && banners.length > 0) {
+      return banners.slice(0, bannersPerPage);
+    }
+    return result;
   };
 
   const currentBanners = getCurrentBanners();
