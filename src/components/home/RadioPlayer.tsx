@@ -97,12 +97,12 @@ export function RadioPlayer() {
                 </div>
               </div>
 
-              {/* Mascot Image */}
-              <div className="hidden md:block">
+              {/* Mascot Image - Centered between radio info and controls */}
+              <div className="flex items-center justify-center">
                 <img 
                   src={mascoteLider}
                   alt="Mascote Líder - 1º Lugar em Audiência"
-                  className="h-20 w-auto object-contain drop-shadow-lg"
+                  className="h-16 md:h-24 w-auto object-contain drop-shadow-lg"
                 />
               </div>
 
