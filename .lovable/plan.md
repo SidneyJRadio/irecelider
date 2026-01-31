@@ -1,44 +1,48 @@
 
-# Plano: Aumentar a Altura dos Banners de Publicidade
+# Plano: Aumentar o Mascote no Player de Rádio
 
-## Situação Atual
+## Objetivo
 
-Os banners estão usando as seguintes proporções (aspect ratio):
-- **Mobile**: `aspect-[6/1]` → banner muito fino/horizontal (ex: 600x100px)
-- **Desktop**: `aspect-[8/1]` → banner ainda mais fino (ex: 800x100px)
-
-Essas proporções resultam em banners com pouca altura, dificultando a visualização do conteúdo publicitário.
+Aumentar significativamente o tamanho do mascote no player de rádio, permitindo que ele "transborde" para fora da área do player, dando mais destaque visual.
 
 ## Alterações Propostas
 
-Aumentar a proporção para deixar os banners mais altos e visíveis:
+### Arquivo: `src/components/home/RadioPlayer.tsx`
 
-| Dispositivo | Atual | Nova Proporção | Tamanho Recomendado |
-|-------------|-------|----------------|---------------------|
-| Mobile | `6/1` (muito fino) | `4/1` | 800 x 200 px |
-| Desktop | `8/1` (muito fino) | `5/1` | 1000 x 200 px |
+**Linhas 100-107** - Ajustar o container e a imagem do mascote:
 
-## Detalhes Técnicos
+| Propriedade | Atual | Nova |
+|-------------|-------|------|
+| Altura Mobile | `h-16` (64px) | `h-24` (96px) |
+| Altura Desktop | `h-24` (96px) | `h-36` (144px) |
+| Posicionamento | Normal (dentro do fluxo) | Posição relativa com margem negativa para "transbordar" |
 
-### Arquivo: `src/components/home/AdBanner.tsx`
+**Código atual:**
+```tsx
+<div className="flex items-center justify-center">
+  <img 
+    src={mascoteLider}
+    alt="Mascote Líder - 1º Lugar em Audiência"
+    className="h-16 md:h-24 w-auto object-contain drop-shadow-lg"
+  />
+</div>
+```
 
-Alterar o aspect ratio em **3 locais**:
-
-1. **Linha 92** - Banner com link:
-   - De: `aspect-[6/1] md:aspect-[8/1]`
-   - Para: `aspect-[4/1] md:aspect-[5/1]`
-
-2. **Linha 99** - Banner sem link:
-   - De: `aspect-[6/1] md:aspect-[8/1]`
-   - Para: `aspect-[4/1] md:aspect-[5/1]`
-
-3. **Linha 106** - Placeholder:
-   - De: `aspect-[6/1] md:aspect-[8/1]`
-   - Para: `aspect-[4/1] md:aspect-[5/1]`
+**Código proposto:**
+```tsx
+<div className="flex items-center justify-center relative">
+  <img 
+    src={mascoteLider}
+    alt="Mascote Líder - 1º Lugar em Audiência"
+    className="h-24 md:h-36 w-auto object-contain drop-shadow-lg -my-4 md:-my-8"
+  />
+</div>
+```
 
 ## Resultado Visual
 
-- **Antes**: Banners muito finos com aproximadamente 50-80px de altura
-- **Depois**: Banners com aproximadamente 100-160px de altura (quase o dobro)
+- **Mobile**: Mascote aumenta de 64px para 96px de altura
+- **Desktop**: Mascote aumenta de 96px para 144px de altura (50% maior)
+- **Efeito de transbordamento**: A margem negativa (`-my-4` e `-my-8`) faz o mascote "sair" dos limites do player, criando um efeito de destaque sem quebrar o layout
 
-Os banners ficarão mais proeminentes e visíveis na página, melhorando a experiência do anunciante e a visualização do conteúdo publicitário.
+O mascote ficará bem maior e mais proeminente, chamando mais atenção visual no player de rádio.
