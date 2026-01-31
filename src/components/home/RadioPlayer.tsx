@@ -29,7 +29,7 @@ export function RadioPlayer() {
   }
 
   return (
-    <section id="player" className="relative py-6">
+    <section id="player" className="relative py-6 z-[60]">
       <div className="container">
         <div className="relative rounded-2xl player-glass overflow-visible">
           {/* Background waves animation */}
