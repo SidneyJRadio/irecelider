@@ -98,7 +98,7 @@ export function RadioPlayer() {
               </div>
 
               {/* Mascot Image - Centered between radio info and controls */}
-              <div className="flex items-center justify-center relative">
+              <div className="flex items-center justify-center relative z-[60]">
                 <img 
                   src={mascoteLider}
                   alt="Mascote Líder - 1º Lugar em Audiência"
