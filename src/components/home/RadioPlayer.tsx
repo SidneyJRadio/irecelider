@@ -102,7 +102,7 @@ export function RadioPlayer() {
                 <img 
                   src={mascoteLider}
                   alt="Mascote Líder - 1º Lugar em Audiência"
-                  className="h-24 md:h-36 w-auto object-contain drop-shadow-lg -my-4 md:-my-8"
+                  className="h-32 md:h-48 w-auto object-contain drop-shadow-xl -my-6 md:-my-12"
                 />
               </div>
 
