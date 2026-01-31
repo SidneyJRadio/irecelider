@@ -2,12 +2,13 @@ import { Link } from "react-router-dom";
 import { Instagram, Youtube, Facebook } from "lucide-react";
 import { radios } from "@/data/radios";
 import grupoLogo from "@/assets/logos/grupo-jsidney.png";
+import mascoteFooter from "@/assets/mascote-footer.png";
 
 export function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Logo & Description */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
@@ -102,6 +103,15 @@ export function Footer() {
                 Bahia
               </Link>
             </nav>
+          </div>
+
+          {/* Mascot */}
+          <div className="flex items-center justify-center lg:justify-end">
+            <img 
+              src={mascoteFooter}
+              alt="Mascote Líder - 1º Lugar em Audiência"
+              className="h-40 w-auto object-contain drop-shadow-lg"
+            />
           </div>
         </div>
 
