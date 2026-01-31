@@ -89,21 +89,21 @@ export function AdBanner({ className, position = "above_news" }: AdBannerProps) 
           rel="noopener noreferrer"
           className="relative bg-muted rounded-xl overflow-hidden group hover:ring-2 hover:ring-primary/30 transition-all flex-1 block"
         >
-        <div className="aspect-[4/1] md:aspect-[5/1]">{content}</div>
+        <div className="aspect-[3/1] md:aspect-[4/1]">{content}</div>
         </a>
       );
     }
 
     return (
       <div key={banner.id} className="relative bg-muted rounded-xl overflow-hidden flex-1">
-        <div className="aspect-[4/1] md:aspect-[5/1]">{content}</div>
+        <div className="aspect-[3/1] md:aspect-[4/1]">{content}</div>
       </div>
     );
   };
 
   const renderPlaceholder = () => (
     <div className="relative bg-gradient-to-br from-muted to-muted/50 rounded-xl border border-dashed border-border overflow-hidden flex-1">
-      <div className="aspect-[4/1] md:aspect-[5/1] flex items-center justify-center">
+      <div className="aspect-[3/1] md:aspect-[4/1] flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Publicidade</p>
           <p className="text-sm font-medium text-muted-foreground/70">Espaço para anúncio</p>
