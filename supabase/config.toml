@@ -2,6 +2,3 @@ project_id = "csrxmtlctewvctmfyuur"
 
 [functions.setup-admin]
 verify_jwt = false
-
-[functions.healthcheck]
-verify_jwt = false
