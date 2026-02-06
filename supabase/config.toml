@@ -3,5 +3,5 @@ project_id = "csrxmtlctewvctmfyuur"
 [functions.setup-admin]
 verify_jwt = false
 
-[functions.share-news]
+[functions.healthcheck]
 verify_jwt = false

@@ -27,7 +27,10 @@ serve(async (req) => {
     const slug = url.searchParams.get("slug");
 
     if (!slug) {
-      return new Response("Missing slug", { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Missing slug" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";

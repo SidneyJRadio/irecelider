@@ -17,7 +17,7 @@ function getNewsUrl(slug: string) {
 }
 
 function getOgUrl(slug: string) {
-  return `${SUPABASE_URL}/functions/v1/share-news?slug=${slug}`;
+  return `${SUPABASE_URL}/functions/v1/healthcheck?slug=${slug}`;
 }
 
 export function ShareButtons({ slug, title, excerpt }: ShareButtonsProps) {
