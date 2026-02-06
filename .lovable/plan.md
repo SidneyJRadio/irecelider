@@ -1,40 +1,46 @@
 
-# Corrigir URL de Compartilhamento das Noticias
 
-## Problema
+# Corrigir Compartilhamento de Noticias - URL Limpa + Preview Correto
 
-O botao "Copiar link" e o compartilhamento no WhatsApp estao usando a URL da funcao backend (algo como `https://csrxmtlctewvctmfyuur.supabase.co/functions/v1/og-news?slug=...`), que e uma URL estranha e confusa para o usuario. Alem disso, a funcao backend esta redirecionando para `irecelider.lovable.app` em vez do dominio correto `aliderdachapada.com.br`.
+## O Problema (3 itens encontrados)
+
+1. **URL feia no WhatsApp**: Ao compartilhar, o texto da mensagem mostra `https://csrxmtlctewvctmfyuur.supabase.co/...` em vez de `https://aliderdachapada.com.br/...`
+2. **Funcao backend fora do ar**: A funcao que gera titulo e descricao para redes sociais esta retornando erro 404 (nao foi implantada com sucesso)
+3. **Informacoes genericas**: O arquivo base do site (`index.html`) mostra "Lovable App" como titulo, entao qualquer preview mostra esse nome generico
 
 ## O Que Sera Feito
 
-### 1. Corrigir o botao "Copiar link" e WhatsApp (`src/components/news/ShareButtons.tsx`)
+### 1. Corrigir o `index.html` com dados reais do site
 
-O link copiado e compartilhado passara a ser a URL real do site:
+Trocar as meta tags genericas ("Lovable App") pelas informacoes reais:
+- Titulo: "Irece Lider - Portal de Noticias da Chapada Diamantina"
+- Descricao: texto descritivo do site
+- Imagem: o favicon ou logo do site
 
+Isso garante que, ao compartilhar qualquer pagina do site, o preview mostrara pelo menos o nome e descricao corretos do site.
+
+### 2. Usar a URL limpa do site para TODOS os compartilhamentos
+
+O botao "WhatsApp" passara a enviar a URL real do site:
 ```
 https://aliderdachapada.com.br/noticias/slug-da-noticia
 ```
 
 Em vez da URL estranha da funcao backend.
 
-Para o WhatsApp especificamente, sera usado o link da funcao backend (para que a miniatura apareca), mas o texto exibido sera limpo e amigavel. Ja o botao "Copiar link" vai copiar a URL real do site.
+### 3. Reimplantar a funcao backend `og-news`
 
-**Abordagem:** 
-- O botao "Copiar link" vai copiar: `https://aliderdachapada.com.br/noticias/{slug}`
-- O botao "WhatsApp" vai usar a URL da funcao backend (para exibir a miniatura), mas isso fica transparente para o usuario
-- O botao "Mais" (compartilhamento nativo) vai usar a URL real do site
-
-### 2. Atualizar o dominio na funcao backend (`supabase/functions/og-news/index.ts`)
-
-A constante `SITE_URL` sera alterada de `https://irecelider.lovable.app` para `https://aliderdachapada.com.br`, para que:
-- O redirecionamento apos o WhatsApp ler as meta tags leve ao dominio correto
-- As meta tags `og:url` e `canonical` apontem para o dominio correto
+A funcao sera reimplantada para que funcione corretamente. Ela continua disponivel para uso futuro (por exemplo, se no futuro quiser gerar previews com titulo especifico da noticia via link especial).
 
 ## Resultado Esperado
 
-- Botao "Copiar link": copia `https://aliderdachapada.com.br/noticias/minha-noticia`
-- Botao "WhatsApp": compartilha com miniatura e redireciona para o dominio correto
-- Botao "Mais": compartilha a URL real do site
+- **Copiar link**: copia `https://aliderdachapada.com.br/noticias/minha-noticia`
+- **WhatsApp**: mostra a URL limpa do site, com preview mostrando "Irece Lider" e a descricao do portal
+- **Mais (compartilhamento nativo)**: usa a URL real do site
+
+## Limitacao Importante
+
+Para que o WhatsApp mostre o **titulo especifico de cada noticia** (em vez do nome do site), seria necessario que o servidor do site gerasse o HTML com as meta tags de cada noticia individualmente. Como o site e uma aplicacao de pagina unica (SPA), o WhatsApp le apenas as meta tags fixas do `index.html`. Isso e uma limitacao tecnica desse tipo de aplicacao -- o preview generico do site ("Irece Lider") e o melhor resultado possivel com URLs limpas.
 
 ---
 
@@ -44,14 +50,23 @@ A constante `SITE_URL` sera alterada de `https://irecelider.lovable.app` para `h
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `src/components/news/ShareButtons.tsx` | Alterar `getShareUrl()` para usar `https://aliderdachapada.com.br/noticias/{slug}` no "Copiar link" e share nativo. Manter URL da funcao backend apenas para o WhatsApp (para miniatura funcionar) |
-| `supabase/functions/og-news/index.ts` | Alterar `SITE_URL` de `https://irecelider.lovable.app` para `https://aliderdachapada.com.br` |
+| `index.html` | Atualizar `<title>`, `og:title`, `og:description`, `og:image` com dados reais do Irece Lider |
+| `src/components/news/ShareButtons.tsx` | Usar `siteUrl` para TODOS os botoes (WhatsApp, copiar link, nativo) -- remover uso da `ogUrl` |
+| `supabase/functions/og-news/index.ts` | Reimplantar (deploy) para funcionar no servidor |
+
+### Mudancas em `index.html`:
+- `<title>` de "Lovable App" para "Irece Lider - Portal de Noticias"
+- `og:title` para "Irece Lider"
+- `og:description` para descricao do portal
+- `og:image` para logo/favicon do site
+- Remover referencias ao Lovable
 
 ### Mudancas em `ShareButtons.tsx`:
-- Criar duas URLs: `siteUrl` (URL real do site para copiar) e `ogUrl` (URL da funcao backend para WhatsApp)
-- `handleCopyLink` usara `siteUrl`
-- `handleWhatsApp` usara `ogUrl` (para a miniatura aparecer)
-- `handleNativeShare` usara `siteUrl`
+- Remover funcao `getOgUrl()` e variavel `SUPABASE_URL`
+- `handleWhatsApp`: usar `siteUrl` em vez de `ogUrl`
+- Simplificar o componente para usar apenas a URL do site em todos os casos
 
-### Mudancas em `og-news/index.ts`:
-- Linha 8: `const SITE_URL = "https://aliderdachapada.com.br";`
+### Deploy da funcao backend:
+- Reimplantar a funcao `og-news` para resolver o erro 404
+- Manter o codigo existente (ja esta atualizado com o dominio correto)
+
