@@ -6,17 +6,24 @@ import { toast } from "sonner";
 interface ShareButtonsProps {
   slug: string;
   title: string;
+  excerpt?: string;
 }
 
 const SITE_URL = "https://aliderdachapada.com.br";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 function getNewsUrl(slug: string) {
   return `${SITE_URL}/noticias/${slug}`;
 }
 
-export function ShareButtons({ slug, title }: ShareButtonsProps) {
+function getOgUrl(slug: string) {
+  return `${SUPABASE_URL}/functions/v1/share-news?slug=${slug}`;
+}
+
+export function ShareButtons({ slug, title, excerpt }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const newsUrl = getNewsUrl(slug);
+  const ogUrl = getOgUrl(slug);
 
   const handleCopyLink = async () => {
     try {
@@ -30,7 +37,9 @@ export function ShareButtons({ slug, title }: ShareButtonsProps) {
   };
 
   const handleWhatsApp = () => {
-    const text = `${title}\n\n${newsUrl}`;
+    const text = excerpt
+      ? `*${title}*\n\n${excerpt}\n\n${ogUrl}`
+      : `*${title}*\n\n${ogUrl}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank"
@@ -42,6 +51,7 @@ export function ShareButtons({ slug, title }: ShareButtonsProps) {
       try {
         await navigator.share({
           title,
+          text: excerpt || title,
           url: newsUrl,
         });
       } catch {
