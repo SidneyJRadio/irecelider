@@ -1,10 +1,12 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { ShareButtons } from "@/components/news/ShareButtons";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Clock, Eye } from "lucide-react";
@@ -42,6 +44,50 @@ export default function NoticiaDetalhe() {
     },
     enabled: !!news?.id,
   });
+
+  // Update document title and meta tags
+  useEffect(() => {
+    if (!news) return;
+
+    document.title = `${news.title} - Irecê Líder`;
+
+    const setMeta = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute("property", property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute("content", content);
+    };
+
+    const setMetaName = (name: string, content: string) => {
+      let tag = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute("name", name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute("content", content);
+    };
+
+    const newsUrl = `${window.location.origin}/noticias/${news.slug}`;
+
+    setMeta("og:type", "article");
+    setMeta("og:title", news.title);
+    setMeta("og:description", news.excerpt || news.title);
+    setMeta("og:url", newsUrl);
+    if (news.image_url) setMeta("og:image", news.image_url);
+
+    setMetaName("twitter:card", "summary_large_image");
+    setMetaName("twitter:title", news.title);
+    setMetaName("twitter:description", news.excerpt || news.title);
+    if (news.image_url) setMetaName("twitter:image", news.image_url);
+
+    return () => {
+      document.title = "Irecê Líder";
+    };
+  }, [news]);
 
   const extractVideoId = (url: string): string | null => {
     if (!url) return null;
@@ -179,7 +225,7 @@ export default function NoticiaDetalhe() {
           )}
 
           {/* Meta */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-8 pb-8 border-b border-border">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border">
             {news.published_at && (
               <span className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
@@ -194,6 +240,11 @@ export default function NoticiaDetalhe() {
                 {news.views} visualizações
               </span>
             )}
+          </div>
+
+          {/* Share Buttons */}
+          <div className="mb-8">
+            <ShareButtons slug={news.slug} title={news.title} />
           </div>
 
           {/* Top Media */}
