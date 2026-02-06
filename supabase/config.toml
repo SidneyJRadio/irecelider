@@ -1,4 +1,7 @@
 project_id = "csrxmtlctewvctmfyuur"
 
-[functions.og-news]
+[functions.setup-admin]
+verify_jwt = false
+
+[functions.share-news]
 verify_jwt = false

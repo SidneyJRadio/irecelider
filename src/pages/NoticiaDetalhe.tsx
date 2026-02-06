@@ -244,7 +244,7 @@ export default function NoticiaDetalhe() {
 
           {/* Share Buttons */}
           <div className="mb-8">
-            <ShareButtons slug={news.slug} title={news.title} />
+            <ShareButtons slug={news.slug} title={news.title} excerpt={news.excerpt} />
           </div>
 
           {/* Top Media */}
