@@ -1,43 +1,57 @@
 
+# Corrigir URL de Compartilhamento das Noticias
 
-# Corrigir Miniatura no WhatsApp - Deploy da Funcao Backend
+## Problema
 
-## Problema Encontrado
-
-A funcao backend `og-news` **nao foi implantada (deployed)** no servidor. Quando o WhatsApp tenta acessar a URL de compartilhamento, recebe um erro **404 (Not Found)** -- por isso nao consegue ler as meta tags da noticia e nao exibe a miniatura.
-
-O codigo da funcao ja existe e esta correto, mas precisa ser reimplantado com uma pequena atualizacao para garantir compatibilidade.
+O botao "Copiar link" e o compartilhamento no WhatsApp estao usando a URL da funcao backend (algo como `https://csrxmtlctewvctmfyuur.supabase.co/functions/v1/og-news?slug=...`), que e uma URL estranha e confusa para o usuario. Alem disso, a funcao backend esta redirecionando para `irecelider.lovable.app` em vez do dominio correto `aliderdachapada.com.br`.
 
 ## O Que Sera Feito
 
-1. **Atualizar a funcao backend `og-news`** para usar o formato moderno do Deno (sem o `serve()` antigo), garantindo compatibilidade com o ambiente de execucao atual.
+### 1. Corrigir o botao "Copiar link" e WhatsApp (`src/components/news/ShareButtons.tsx`)
 
-2. **Fazer o deploy automatico** da funcao para que ela esteja disponivel online.
+O link copiado e compartilhado passara a ser a URL real do site:
 
-3. **Ajustar os headers CORS** para incluir todos os headers necessarios.
+```
+https://aliderdachapada.com.br/noticias/slug-da-noticia
+```
 
-Nenhuma mudanca visual sera feita no site. Os botoes de compartilhar ja estao funcionando -- o problema era apenas que a funcao backend nao estava no ar.
+Em vez da URL estranha da funcao backend.
+
+Para o WhatsApp especificamente, sera usado o link da funcao backend (para que a miniatura apareca), mas o texto exibido sera limpo e amigavel. Ja o botao "Copiar link" vai copiar a URL real do site.
+
+**Abordagem:** 
+- O botao "Copiar link" vai copiar: `https://aliderdachapada.com.br/noticias/{slug}`
+- O botao "WhatsApp" vai usar a URL da funcao backend (para exibir a miniatura), mas isso fica transparente para o usuario
+- O botao "Mais" (compartilhamento nativo) vai usar a URL real do site
+
+### 2. Atualizar o dominio na funcao backend (`supabase/functions/og-news/index.ts`)
+
+A constante `SITE_URL` sera alterada de `https://irecelider.lovable.app` para `https://aliderdachapada.com.br`, para que:
+- O redirecionamento apos o WhatsApp ler as meta tags leve ao dominio correto
+- As meta tags `og:url` e `canonical` apontem para o dominio correto
 
 ## Resultado Esperado
 
-Apos a correcao:
-- Ao compartilhar uma noticia no WhatsApp, a miniatura com a imagem e o titulo da noticia vao aparecer corretamente.
-- O link vai redirecionar o usuario para a pagina da noticia no site.
+- Botao "Copiar link": copia `https://aliderdachapada.com.br/noticias/minha-noticia`
+- Botao "WhatsApp": compartilha com miniatura e redireciona para o dominio correto
+- Botao "Mais": compartilha a URL real do site
 
 ---
 
 ## Detalhes Tecnicos
 
-### Arquivo a ser editado:
+### Arquivos a serem editados:
 
-| Arquivo | Acao |
-|---------|------|
-| `supabase/functions/og-news/index.ts` | Atualizar para formato moderno do Deno |
+| Arquivo | Mudanca |
+|---------|---------|
+| `src/components/news/ShareButtons.tsx` | Alterar `getShareUrl()` para usar `https://aliderdachapada.com.br/noticias/{slug}` no "Copiar link" e share nativo. Manter URL da funcao backend apenas para o WhatsApp (para miniatura funcionar) |
+| `supabase/functions/og-news/index.ts` | Alterar `SITE_URL` de `https://irecelider.lovable.app` para `https://aliderdachapada.com.br` |
 
-### Mudancas no codigo:
+### Mudancas em `ShareButtons.tsx`:
+- Criar duas URLs: `siteUrl` (URL real do site para copiar) e `ogUrl` (URL da funcao backend para WhatsApp)
+- `handleCopyLink` usara `siteUrl`
+- `handleWhatsApp` usara `ogUrl` (para a miniatura aparecer)
+- `handleNativeShare` usara `siteUrl`
 
-- Substituir `import { serve } from "https://deno.land/std@0.168.0/http/server.ts"` pelo formato moderno `Deno.serve()`
-- Atualizar os CORS headers para incluir todos os headers necessarios pelo sistema
-- Manter toda a logica de busca de noticias e geracao de HTML com meta tags OG intacta
-- O deploy sera feito automaticamente apos a edicao
-
+### Mudancas em `og-news/index.ts`:
+- Linha 8: `const SITE_URL = "https://aliderdachapada.com.br";`
