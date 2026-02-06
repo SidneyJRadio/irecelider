@@ -8,19 +8,25 @@ interface ShareButtonsProps {
   title: string;
 }
 
+const SITE_URL = "https://aliderdachapada.com.br";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function getShareUrl(slug: string) {
+function getSiteUrl(slug: string) {
+  return `${SITE_URL}/noticias/${slug}`;
+}
+
+function getOgUrl(slug: string) {
   return `${SUPABASE_URL}/functions/v1/og-news?slug=${encodeURIComponent(slug)}`;
 }
 
 export function ShareButtons({ slug, title }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = getShareUrl(slug);
+  const siteUrl = getSiteUrl(slug);
+  const ogUrl = getOgUrl(slug);
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(siteUrl);
       setCopied(true);
       toast.success("Link copiado!");
       setTimeout(() => setCopied(false), 2000);
@@ -30,7 +36,7 @@ export function ShareButtons({ slug, title }: ShareButtonsProps) {
   };
 
   const handleWhatsApp = () => {
-    const text = `${title}\n\n${shareUrl}`;
+    const text = `${title}\n\n${ogUrl}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank"
@@ -42,7 +48,7 @@ export function ShareButtons({ slug, title }: ShareButtonsProps) {
       try {
         await navigator.share({
           title,
-          url: shareUrl,
+          url: siteUrl,
         });
       } catch {
         // User cancelled share

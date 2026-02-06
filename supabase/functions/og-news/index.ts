@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SITE_URL = "https://irecelider.lovable.app";
+const SITE_URL = "https://aliderdachapada.com.br";
 const SITE_NAME = "Irecê Líder";
 
 function escapeHtml(text: string): string {
