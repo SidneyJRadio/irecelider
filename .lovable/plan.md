@@ -1,90 +1,43 @@
 
-# Miniatura e Titulo ao Compartilhar Noticias nas Redes Sociais
 
-## O Problema
+# Corrigir Miniatura no WhatsApp - Deploy da Funcao Backend
 
-Quando voce compartilha o link de uma noticia no WhatsApp, Facebook ou outras redes sociais, eles mostram apenas informacoes genericas ("Lovable App") porque os robos dessas plataformas nao executam JavaScript -- eles so leem o HTML estatico da pagina, que hoje tem as mesmas meta tags para todas as paginas.
+## Problema Encontrado
 
-## A Solucao
+A funcao backend `og-news` **nao foi implantada (deployed)** no servidor. Quando o WhatsApp tenta acessar a URL de compartilhamento, recebe um erro **404 (Not Found)** -- por isso nao consegue ler as meta tags da noticia e nao exibe a miniatura.
 
-Criar uma funcao backend que, quando um robo de rede social acessa o link da noticia, retorna uma pagina HTML com as informacoes corretas (titulo, descricao e imagem). Para usuarios normais, a pagina continua funcionando normalmente.
+O codigo da funcao ja existe e esta correto, mas precisa ser reimplantado com uma pequena atualizacao para garantir compatibilidade.
 
-### Como vai funcionar:
+## O Que Sera Feito
 
-1. Ao compartilhar uma noticia, o link usado sera algo como:
-   `https://irecelider.lovable.app/api/noticias/slug-da-noticia`
+1. **Atualizar a funcao backend `og-news`** para usar o formato moderno do Deno (sem o `serve()` antigo), garantindo compatibilidade com o ambiente de execucao atual.
 
-2. Quando o WhatsApp/Facebook acessar esse link, vai receber uma pagina com as meta tags corretas (titulo, imagem, descricao)
+2. **Fazer o deploy automatico** da funcao para que ela esteja disponivel online.
 
-3. Essa pagina automaticamente redireciona o usuario para a noticia real no site
+3. **Ajustar os headers CORS** para incluir todos os headers necessarios.
 
-4. Na pagina da noticia, sera adicionado um botao de "Compartilhar" que ja copia o link correto
+Nenhuma mudanca visual sera feita no site. Os botoes de compartilhar ja estao funcionando -- o problema era apenas que a funcao backend nao estava no ar.
+
+## Resultado Esperado
+
+Apos a correcao:
+- Ao compartilhar uma noticia no WhatsApp, a miniatura com a imagem e o titulo da noticia vao aparecer corretamente.
+- O link vai redirecionar o usuario para a pagina da noticia no site.
 
 ---
 
 ## Detalhes Tecnicos
 
-### 1. Backend Function: `og-news`
-
-Criar uma Edge Function em `supabase/functions/og-news/index.ts` que:
-
-- Recebe o slug da noticia como parametro na URL (query param `slug`)
-- Busca os dados da noticia no banco de dados (titulo, imagem, resumo)
-- Retorna um HTML com as meta tags Open Graph corretas:
-  - `og:title` -- titulo da noticia
-  - `og:description` -- resumo da noticia
-  - `og:image` -- imagem da noticia
-  - `og:url` -- URL da noticia no site
-  - `og:type` -- "article"
-  - Tags do Twitter Card equivalentes
-- Inclui um redirecionamento automatico via `<meta http-equiv="refresh">` e JavaScript para a URL real da noticia no site publicado
-
-### 2. Pagina de Detalhe da Noticia (`src/pages/NoticiaDetalhe.tsx`)
-
-- Atualizar dinamicamente o `document.title` com o titulo da noticia
-- Atualizar as meta tags OG no `<head>` via JavaScript (funciona para crawlers que executam JS)
-- Adicionar botoes de compartilhamento (WhatsApp, copiar link) que usam a URL da Edge Function como link de compartilhamento
-
-### 3. Formato da URL de compartilhamento
-
-A URL de compartilhamento sera montada assim:
-
-```
-https://{SUPABASE_URL}/functions/v1/og-news?slug={slug-da-noticia}
-```
-
-Essa URL sera usada nos botoes de compartilhar. Quando o WhatsApp acessar esse link, recebera o HTML com as meta tags corretas e o usuario sera redirecionado para a noticia real.
-
-### Arquivos a serem criados/editados:
+### Arquivo a ser editado:
 
 | Arquivo | Acao |
 |---------|------|
-| `supabase/functions/og-news/index.ts` | Criar - Edge Function que serve OG tags |
-| `src/pages/NoticiaDetalhe.tsx` | Editar - Adicionar botoes de compartilhamento e meta tags dinamicas |
+| `supabase/functions/og-news/index.ts` | Atualizar para formato moderno do Deno |
 
-### Fluxo de compartilhamento:
+### Mudancas no codigo:
 
-```text
-Usuario clica "Compartilhar no WhatsApp"
-        |
-        v
-Link copiado: .../functions/v1/og-news?slug=minha-noticia
-        |
-        v
-WhatsApp acessa o link (robo)
-        |
-        v
-Edge Function busca dados no banco
-        |
-        v
-Retorna HTML com og:title, og:image, og:description
-        |
-        v
-WhatsApp exibe miniatura com imagem e titulo
-        |
-        v
-Usuario clica no link no WhatsApp
-        |
-        v
-Redirecionado para irecelider.lovable.app/noticias/minha-noticia
-```
+- Substituir `import { serve } from "https://deno.land/std@0.168.0/http/server.ts"` pelo formato moderno `Deno.serve()`
+- Atualizar os CORS headers para incluir todos os headers necessarios pelo sistema
+- Manter toda a logica de busca de noticias e geracao de HTML com meta tags OG intacta
+- O deploy sera feito automaticamente apos a edicao
+
